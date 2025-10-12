@@ -1199,27 +1199,27 @@ async function loadArtists() {
     //       <small>${artist.joinedDate} Joined</small>
     //     </div>
     //   </div>
-    artistsGrid.innerHTML = artists.map(artist => `
-      <div class="artist-card" onclick="showArtistProfile('${artist.walletAddress}')">
-        <div class="artist-header">
-            <div class="artist-avatar">${artist.username.charAt(0).toUpperCase()}</div>
-            <div class="artist-info">
-            <h3>${artist.username}</h3>
-            <p>${artist.bio ? artist.bio.slice(0, 40) + "..." : "No bio yet."}</p>
-            </div>
-        </div>
-
-        <div class="artist-stats">
-            <span><i class="fa-solid fa-image"></i> ${artist.artworks?.length || 0} Artworks</span>
-            <span><i class="fa-brands fa-ethereum"></i> ${(artist.totalSales || 0).toFixed(3)} tETH</span>
-        </div>
-
-        <div class="artist-stats">
-            <span><i class="fa-regular fa-calendar"></i> ${artist.joinedDate || "-"}</span>
+artistsGrid.innerHTML = artists.map(artist => `
+  <div class="artist-card" onclick="showArtistProfile('${artist.walletAddr}')">
+    <div class="artist-header">
+        <div class="artist-avatar">${artist.username.charAt(0).toUpperCase()}</div>
+        <div class="artist-info">
+          <h3>${artist.username}</h3>
+          <p>${artist.bio ? artist.bio.slice(0, 40) + "..." : "No bio yet."}</p>
         </div>
     </div>
 
-    `).join('');
+    <div class="artist-stats">
+        <span><i class="fa-solid fa-image"></i> ${artist.artworks?.length || 0} Artworks</span>
+        <span><i class="fa-brands fa-ethereum"></i> ${(artist.totalSales || 0).toFixed(3)} tETH</span>
+    </div>
+
+    <div class="artist-stats">
+        <span><i class="fa-regular fa-calendar"></i> ${artist.joinedDate || "-"}</span>
+    </div>
+  </div>
+`).join('');
+
   } catch (err) {
     console.error('Error loading artists:', err);
     artistsGrid.innerHTML = `<p style="color:red;">Failed to load artists.</p>`;
@@ -2555,6 +2555,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
