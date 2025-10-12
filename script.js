@@ -654,7 +654,7 @@ function showArtworkDetail(artworkId) {
 </Editor.edit_file_by_replace>
 
 <Editor.edit_file_by_replace>
-<file_name>/file_name>
+<file_name></file_name>
 <to_replace>                <div class="cart-actions">
                     <button class="btn-primary" onclick="checkout()" id="checkoutBtn">Checkout</button>
                 </div></to_replace>
@@ -2446,6 +2446,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
