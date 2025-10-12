@@ -1627,7 +1627,7 @@ function renderCartItems() {
                 <h4 class="cart-item-title">${item.title}</h4>
                 <p class="cart-item-artist">by ${item.artist}</p>
                 <p class="cart-item-price">${item.price} ETH</p>
-                <span class="nft-badge">Unique NFT</span>
+                <span class="nft-badge">Unique Artwork</span>
             </div>
             <div class="cart-item-actions">
                 <button class="remove-btn enhanced-remove-btn" onclick="removeFromCart('${item.id}')">
@@ -2436,6 +2436,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
