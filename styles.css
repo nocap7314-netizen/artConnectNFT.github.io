@@ -1677,6 +1677,15 @@ body {
     transform: rotate(360deg);
   }
 }
+.cart-actions button:disabled {
+    background: #a0aec0; /* grey */
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.cart-actions button:not(:disabled):hover {
+    background: #5a67d8;
+}
 
 
 
