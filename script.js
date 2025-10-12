@@ -1448,6 +1448,8 @@ async function showArtistProfile(walletAddr) {
 }
 */
 async function showArtistProfile(walletAddr) {
+  console.log("🟢 showArtistProfile called with:", walletAddr);
+
   if (!walletAddr) {
     console.error("❌ No wallet address provided");
     return;
@@ -1463,112 +1465,95 @@ async function showArtistProfile(walletAddr) {
   }
 
   modal.style.display = "flex";
-  profileContainer.innerHTML = `
-    <div style="text-align:center; padding:2rem;">
-      <p>Loading artist details...</p>
-    </div>
-  `;
+  profileContainer.innerHTML = `<div style="text-align:center; padding:2rem;">Loading artist details...</div>`;
 
   try {
-    // Step 1 — Load Firestore user data
+    console.log("🔹 Fetching user data from Firestore:", walletAddr);
     const userRef = doc(db, "users", walletAddr);
     const userSnap = await getDoc(userRef);
+    console.log("📄 userSnap.exists:", userSnap.exists());
     let userData = userSnap.exists() ? userSnap.data() : {};
+    console.log("📦 userData:", userData);
 
-    // Step 2 — Load artworks
+    // Load artworks from Firestore
     let artDocs = [];
     try {
+      console.log("🔹 Fetching subcollection sellingArts...");
       const sellingArtsRef = collection(db, "users", walletAddr, "sellingArts");
       const artSnap = await getDocs(sellingArtsRef);
       artSnap.forEach(docSnap => {
         artDocs.push({ id: docSnap.id, ...docSnap.data() });
       });
+      console.log("🎨 Loaded artworks:", artDocs.length);
     } catch (err) {
       console.warn("⚠️ Could not load sellingArts subcollection:", err);
     }
 
-    // Step 3 — Fallback to submittedArtworks (if defined)
+    // Fallback
     let artistArts = [];
     if (typeof submittedArtworks !== "undefined" && Array.isArray(submittedArtworks)) {
       artistArts = submittedArtworks.filter(
         a => a.sellerId?.toLowerCase() === walletAddr
       );
+      console.log("🎨 Fallback submittedArtworks found:", artistArts.length);
+    } else {
+      console.log("ℹ️ submittedArtworks undefined or not array");
     }
 
     if (artDocs.length === 0 && artistArts.length > 0) {
       artDocs = artistArts;
+      console.log("✅ Using fallback submittedArtworks");
     }
 
-    // Step 4 — Artist info fallback
-    const username =
-      userData.username || artistArts[0]?.artist || "Unknown Artist";
+    const username = userData.username || artistArts[0]?.artist || "Unknown Artist";
     const bio = userData.bio || "This artist has not added a bio yet.";
     const joined = userData.joinedAt
       ? new Date(userData.joinedAt).getFullYear()
       : "—";
 
-    // Step 5 — Build artworks grid
+    console.log("👤 Artist Info:", { username, bio, joined });
+
     const artworksHTML =
       artDocs.length > 0
         ? artDocs
             .map(art => {
-              const imageUrl = art.imageUrl || "https://via.placeholder.com/160x110?text=No+Image";
-              const title = art.title || "Untitled";
-              const price = art.price || "0.000";
-              const category = art.category || "Uncategorized";
-              const year = art.year || "—";
-              const artId = art.id || "";
-
+              const imageUrl =
+                art.imageUrl || "https://via.placeholder.com/160x110?text=No+Image";
               return `
-                <div class="portfolio-item" style="cursor:pointer;"
-                     onclick="closeArtistModal(); showArtworkDetail('${artId}')">
-                  <img src="${imageUrl}" alt="${title}" loading="lazy"
-                      style="width:160px; height:110px; object-fit:cover; border-radius:8px;">
-                  <div class="portfolio-item-meta" style="margin-top:6px; text-align:left;">
-                    <strong style="font-size:0.95rem;">${title}</strong>
-                    <div style="font-size:0.85rem; color:#666;">
-                      ${category} • ${year} • ${price} tETH
-                    </div>
+                <div class="portfolio-item" onclick="closeArtistModal(); showArtworkDetail('${art.id || ''}')">
+                  <img src="${imageUrl}" alt="${art.title || 'Untitled'}" loading="lazy"
+                       style="width:160px; height:110px; object-fit:cover; border-radius:8px;">
+                  <div style="margin-top:6px;">
+                    <strong>${art.title || "Untitled"}</strong><br>
+                    <span style="color:#666;">${art.category || "Uncategorized"} • ${art.price || "0"} tETH</span>
                   </div>
-                </div>
-              `;
+                </div>`;
             })
             .join("")
-        : `<p style="margin-top:1rem;">No artworks available yet.</p>`;
+        : `<p>No artworks available yet.</p>`;
 
-    // Step 6 — Render
     profileContainer.innerHTML = `
-      <div class="artist-profile" style="padding:1rem 1.5rem;">
-        <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1rem;">
-          <div style="width:64px; height:64px; border-radius:12px; display:flex;
-                      align-items:center; justify-content:center; background:#f3f4f6;
-                      font-weight:700; font-size:1.4rem;">
+      <div style="padding:1rem 1.5rem;">
+        <div style="display:flex; gap:1rem; align-items:center;">
+          <div style="width:64px; height:64px; border-radius:12px; background:#f3f4f6;
+                      display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:bold;">
             ${username.charAt(0).toUpperCase()}
           </div>
           <div>
-            <h2 style="margin:0;">${username}</h2>
-            <div style="color:#6b7280; font-size:0.95rem;">Joined ${joined}</div>
+            <h2>${username}</h2>
+            <p style="color:#6b7280;">Joined ${joined}</p>
           </div>
         </div>
-
-        <p class="artist-bio" style="color:#374151; margin-bottom:1rem;">${bio}</p>
-
-        <h3 style="margin:0 0 0.5rem;">Portfolio</h3>
-        <div class="artist-portfolio-grid" style="display:flex; gap:1rem; flex-wrap:wrap;">
-          ${artworksHTML}
-        </div>
+        <p>${bio}</p>
+        <h3>Portfolio</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:1rem;">${artworksHTML}</div>
       </div>
     `;
   } catch (error) {
     console.error("❌ Error loading artist profile:", error);
-    profileContainer.innerHTML = `
-      <div style="text-align:center; color:red; padding:2rem;">
-        <p>Failed to load artist details.</p>
-      </div>`;
+    profileContainer.innerHTML = `<div style="color:red;">Failed to load artist details.</div>`;
   }
 }
-
-
 
 
 function closeArtistModal() {
@@ -2570,6 +2555,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
