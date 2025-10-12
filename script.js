@@ -372,25 +372,19 @@ function updateWalletUI() {
 }
 
 async function sendPayment(toAddress, amount) {
-
-    // ✅ Ensure wallet is ready before executing transaction
     if (!walletConnected || !walletAddress) {
         return onWalletReady(async (address) => {
             console.log("Wallet was not ready — now connected:", address);
-            return await sendPayment(toAddress, amount); // re-run once wallet is ready
+            return await sendPayment(toAddress, amount);
         });
     }
 
-    if (!walletConnected) throw new Error('Wallet not connected');
-
-    // Show loading overlay
     showLoading();
 
     try {
-        // Get current chain ID
         let chainId = await window.ethereum.request({ method: 'eth_chainId' });
 
-        // Allow only Sepolia (0xaa36a7)
+        // ✅ Ensure we're on Sepolia
         if (chainId !== '0xaa36a7') {
             try {
                 await window.ethereum.request({
@@ -399,11 +393,10 @@ async function sendPayment(toAddress, amount) {
                 });
                 chainId = '0xaa36a7';
             } catch (switchError) {
-                if (switchError.code === 4902) {
+                if (switchError.code === 4902)
                     throw new Error('Sepolia not available in MetaMask. Please add it manually.');
-                } else {
+                else
                     throw new Error('Please switch your MetaMask network to Sepolia');
-                }
             }
         }
 
@@ -427,7 +420,6 @@ async function sendPayment(toAddress, amount) {
         if (error.code === 4001) throw new Error('Transaction rejected by user');
         throw error;
     } finally {
-        // Hide loading overlay after transaction attempt (success or fail)
         hideLoading();
     }
 }
@@ -782,7 +774,6 @@ function renderCartItems() {
 }
 
 async function checkout() {
-
     if (!walletConnected || !walletAddress) {
         return onWalletReady(async (address) => {
             console.log("Wallet was not ready — now connected:", address);
@@ -795,18 +786,11 @@ async function checkout() {
         return;
     }
 
-    if (!walletConnected || !walletAddress) {
-        showToast('Please connect your MetaMask wallet first', 'error');
-        return;
-    }
-
-    const platformWallet = '0x742d35Cc6686C59fCC3e544961fcdeEeC4d91dc3';
+    showLoading();
+    showLoadingText("Preparing your transactions...");
+    showToast('Processing payment...', 'warning');
 
     try {
-        showLoading();
-        showLoadingText("Preparing your transactions...");
-        showToast('Processing payment...', 'warning');
-
         for (let item of cart) {
             if (!item.sellerId || item.sellerId === "unknown") {
                 console.warn(`Missing sellerId for artwork: ${item.title}`);
@@ -814,20 +798,12 @@ async function checkout() {
             }
 
             const totalPrice = item.price * (item.quantity || 1);
+            const sellerAmount = totalPrice; // 100% to artist
 
-            // Split payment
-            const sellerAmount = totalPrice * 1;
-            //const platformAmount = totalPrice * 0.1;
-
-            // 🔹 Step 1: Pay Seller
+            // 🔹 Pay Seller
             showLoadingText(`Waiting for MetaMask confirmation to pay seller for "${item.title}"...`);
             const txSeller = await sendPayment(item.sellerId, sellerAmount);
             console.log("Transaction sent to seller:", txSeller);
-
-            // 🔹 Step 2: Pay Platform
-            //showLoadingText(`Waiting for MetaMask confirmation to pay platform fee for "${item.title}"...`);
-            //const txPlatform = await sendPayment(platformWallet, platformAmount);
-            //console.log("Transaction sent to platform:", txPlatform);
 
             // 🔹 Record transactions in Firestore
             const buyerRef = doc(db, "users", walletAddress.toLowerCase(), "artBought", String(item.id));
@@ -860,7 +836,7 @@ async function checkout() {
             console.log("Deleted from seller:", item.sellerId);
         }
 
-        // 🔹 All payments done — clear and close
+        // 🔹 All done
         clearCart();
         toggleCart();
         showLoadingText("Finalizing your order...");
@@ -870,9 +846,6 @@ async function checkout() {
             showToast('Payment successful! Order confirmed.', 'success');
             loadArtworks();
         }, 800);
-
-
-
     } catch (error) {
         console.error('Checkout failed:', error);
         hideLoading();
@@ -2446,6 +2419,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
