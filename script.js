@@ -736,6 +736,18 @@ function updateCartUI() {
     }
 }
 
+
+
+function toggleCart() {
+    const modal = document.getElementById('cartModal');
+    if (modal.style.display === 'block') {
+        modal.style.display = 'none';
+    } else {
+        modal.style.display = 'block';
+        renderCartItems();
+    }
+}
+
 function renderCartItems() {
     const cartItems = document.getElementById('cartItems');
     const cartTotal = document.getElementById('cartTotal');
@@ -2437,6 +2449,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
