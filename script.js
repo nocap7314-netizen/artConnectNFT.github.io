@@ -1330,7 +1330,7 @@ async function loadArtists() {
 //             </div>`;
 //     }
 // }
-
+/*
 async function showArtistProfile(walletAddr) {
   walletAddr = walletAddr.toLowerCase();
   const modal = document.getElementById("artistModal");
@@ -1446,6 +1446,128 @@ async function showArtistProfile(walletAddr) {
       </div>`;
   }
 }
+*/
+async function showArtistProfile(walletAddr) {
+  if (!walletAddr) {
+    console.error("❌ No wallet address provided");
+    return;
+  }
+
+  walletAddr = walletAddr.toLowerCase();
+  const modal = document.getElementById("artistModal");
+  const profileContainer = document.getElementById("artistProfile");
+
+  if (!modal || !profileContainer) {
+    console.error("❌ artist modal or profile container missing in HTML");
+    return;
+  }
+
+  modal.style.display = "flex";
+  profileContainer.innerHTML = `
+    <div style="text-align:center; padding:2rem;">
+      <p>Loading artist details...</p>
+    </div>
+  `;
+
+  try {
+    // Step 1 — Load Firestore user data
+    const userRef = doc(db, "users", walletAddr);
+    const userSnap = await getDoc(userRef);
+    let userData = userSnap.exists() ? userSnap.data() : {};
+
+    // Step 2 — Load artworks
+    let artDocs = [];
+    try {
+      const sellingArtsRef = collection(db, "users", walletAddr, "sellingArts");
+      const artSnap = await getDocs(sellingArtsRef);
+      artSnap.forEach(docSnap => {
+        artDocs.push({ id: docSnap.id, ...docSnap.data() });
+      });
+    } catch (err) {
+      console.warn("⚠️ Could not load sellingArts subcollection:", err);
+    }
+
+    // Step 3 — Fallback to submittedArtworks (if defined)
+    let artistArts = [];
+    if (typeof submittedArtworks !== "undefined" && Array.isArray(submittedArtworks)) {
+      artistArts = submittedArtworks.filter(
+        a => a.sellerId?.toLowerCase() === walletAddr
+      );
+    }
+
+    if (artDocs.length === 0 && artistArts.length > 0) {
+      artDocs = artistArts;
+    }
+
+    // Step 4 — Artist info fallback
+    const username =
+      userData.username || artistArts[0]?.artist || "Unknown Artist";
+    const bio = userData.bio || "This artist has not added a bio yet.";
+    const joined = userData.joinedAt
+      ? new Date(userData.joinedAt).getFullYear()
+      : "—";
+
+    // Step 5 — Build artworks grid
+    const artworksHTML =
+      artDocs.length > 0
+        ? artDocs
+            .map(art => {
+              const imageUrl = art.imageUrl || "https://via.placeholder.com/160x110?text=No+Image";
+              const title = art.title || "Untitled";
+              const price = art.price || "0.000";
+              const category = art.category || "Uncategorized";
+              const year = art.year || "—";
+              const artId = art.id || "";
+
+              return `
+                <div class="portfolio-item" style="cursor:pointer;"
+                     onclick="closeArtistModal(); showArtworkDetail('${artId}')">
+                  <img src="${imageUrl}" alt="${title}" loading="lazy"
+                      style="width:160px; height:110px; object-fit:cover; border-radius:8px;">
+                  <div class="portfolio-item-meta" style="margin-top:6px; text-align:left;">
+                    <strong style="font-size:0.95rem;">${title}</strong>
+                    <div style="font-size:0.85rem; color:#666;">
+                      ${category} • ${year} • ${price} tETH
+                    </div>
+                  </div>
+                </div>
+              `;
+            })
+            .join("")
+        : `<p style="margin-top:1rem;">No artworks available yet.</p>`;
+
+    // Step 6 — Render
+    profileContainer.innerHTML = `
+      <div class="artist-profile" style="padding:1rem 1.5rem;">
+        <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1rem;">
+          <div style="width:64px; height:64px; border-radius:12px; display:flex;
+                      align-items:center; justify-content:center; background:#f3f4f6;
+                      font-weight:700; font-size:1.4rem;">
+            ${username.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h2 style="margin:0;">${username}</h2>
+            <div style="color:#6b7280; font-size:0.95rem;">Joined ${joined}</div>
+          </div>
+        </div>
+
+        <p class="artist-bio" style="color:#374151; margin-bottom:1rem;">${bio}</p>
+
+        <h3 style="margin:0 0 0.5rem;">Portfolio</h3>
+        <div class="artist-portfolio-grid" style="display:flex; gap:1rem; flex-wrap:wrap;">
+          ${artworksHTML}
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error("❌ Error loading artist profile:", error);
+    profileContainer.innerHTML = `
+      <div style="text-align:center; color:red; padding:2rem;">
+        <p>Failed to load artist details.</p>
+      </div>`;
+  }
+}
+
 
 
 
@@ -2448,6 +2570,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
