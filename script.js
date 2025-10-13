@@ -1009,7 +1009,7 @@ async function submitArtwork(event) {
 
 function validateSubmissionForm(formData) {
     if (!formData.title || !formData.artist || !formData.description || 
-        !formData.imageUrl || !formData.category || !formData.dimensions) {
+        !formData.imageUrl || !formData.category || !formData.dimension) {
         showToast('Please fill in all required fields', 'error');
         return false;
     }
@@ -2471,6 +2471,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
