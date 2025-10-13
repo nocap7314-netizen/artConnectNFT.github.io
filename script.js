@@ -772,7 +772,7 @@ function toggleCart() {
         renderCartItems();
     }
 }
-
+/*
 function renderCartItems() {
     const cartItems = document.getElementById('cartItems');
     const cartTotal = document.getElementById('cartTotal');
@@ -806,7 +806,7 @@ function renderCartItems() {
         </div>
     `).join('');
 }
-
+*/
 async function checkout() {
     if (!walletConnected || !walletAddress) {
         return onWalletReady(async (address) => {
@@ -1661,6 +1661,7 @@ function viewTransactions() {
 }
 
 // Enhanced cart functionality with basket branding
+
 function renderCartItems() {
     const cartItems = document.getElementById('cartItems');
     const cartTotal = document.getElementById('cartTotal');
@@ -2541,6 +2542,7 @@ window.filterArtworks = filterArtworks;
 window.submitArtwork = submitArtwork;
 window.showArtworkDetail = showArtworkDetail;
 window.closeArtworkModal = closeArtworkModal;
+
 
 
 
