@@ -623,7 +623,7 @@ function showArtworkDetail(artworkId) {
             <div class="artwork-detail-meta">
                 <span>${artwork.category}</span>
                 <span>${artwork.year}</span>
-                <span>${artwork.dimensions}</span>
+                <span>${artwork.dimension}</span>
             </div>
             <p class="artwork-detail-description">${artwork.description}</p>
             <div class="artwork-status-detail">
@@ -986,8 +986,8 @@ async function submitArtwork(event) {
         // save to global artworks with same doc id
         await setDoc(doc(db, "artworks", artDocId), newArtwork);
 
-        // submittedArtworks.push(newArtwork);
-        // localStorage.setItem('user_submitted_artwork', JSON.stringify(submittedArtworks));
+        submittedArtworks.push(newArtwork);
+        localStorage.setItem('user_submitted_artwork', JSON.stringify(submittedArtworks));
         
         // Reset form
         document.getElementById('submitForm').reset();
@@ -996,7 +996,7 @@ async function submitArtwork(event) {
         showToast('Artwork submitted successfully!', 'success');
         showSection('gallery');
         loadArtworks();
-        //setTimeout(() => location.reload(), 1000);
+        setTimeout(() => location.reload(), 1000);
         
     } catch (error) {
         console.error('Submission failed:', error);
@@ -1013,12 +1013,12 @@ function validateSubmissionForm(formData) {
         showToast('Please fill in all required fields', 'error');
         return false;
     }
-
+    
     if (formData.dimension === "") {
         showToast('Please select a resolution/dimension', 'error');
         return false;
     }
-    
+
     if (isNaN(formData.price) || formData.price <= 0) {
         showToast('Please enter a valid price', 'error');
         return false;
@@ -2471,9 +2471,6 @@ function onWalletReady(callback) {
         });
     }
 }
-
-
-
 
 
 
