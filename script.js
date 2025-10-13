@@ -2528,6 +2528,21 @@ function onWalletReady(callback) {
         });
     }
 }
+// Expose functions to global scope for HTML buttons
+window.connectWallet = connectWallet;
+window.disconnectWallet = disconnectWallet;
+window.toggleCart = toggleCart;
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.checkout = checkout;
+window.showSection = showSection;
+window.loadArtworksLive = loadArtworksLive;
+window.filterArtworks = filterArtworks;
+window.submitArtwork = submitArtwork;
+window.showArtworkDetail = showArtworkDetail;
+window.closeArtworkModal = closeArtworkModal;
+
+
 
 
 
