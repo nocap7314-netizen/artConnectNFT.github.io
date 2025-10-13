@@ -157,7 +157,7 @@ function initFirestoreListeners() {
     if (unsubscribeArtworks) unsubscribeArtworks();
     if (unsubscribePurchases) unsubscribePurchases();
 
-    // 🔹 Live listener for all artworks
+    // 🔹 Live listener for all artworks (everyone sees)
     const artworksRef = collection(db, "artworks");
     unsubscribeArtworks = onSnapshot(artworksRef, (snapshot) => {
         const artworks = snapshot.docs.map(docSnap => ({
@@ -168,18 +168,19 @@ function initFirestoreListeners() {
         console.log(`✅ Real-time listener active for artworks: ${artworks.length} items`);
     }, (err) => console.error("Firestore artworks listener error:", err));
 
-    // 🔹 Live listener for user purchases
-    if (walletConnected && walletAddress) {
+    // 🔹 Live listener for user purchases (requires wallet)
+    if (window.walletConnected && window.walletAddress) {
         const purchasesRef = collection(db, "purchases");
         unsubscribePurchases = onSnapshot(purchasesRef, (snapshot) => {
             const purchases = snapshot.docs
                 .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
-                .filter(p => p.buyer === walletAddress); // only user's purchases
+                .filter(p => p.buyer === window.walletAddress); // only user's purchases
             renderUserPurchases(purchases);
             console.log(`✅ Real-time listener active for user purchases: ${purchases.length} items`);
         }, (err) => console.error("Firestore purchases listener error:", err));
     }
 }
+
 
 /**
  * Reset the UI to default state
@@ -345,18 +346,21 @@ window.addEventListener('load', async () => {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             const chainId = await window.ethereum.request({ method: 'eth_chainId' });
 
-            if (accounts.length > 0 && chainId === '0xaa36a7') {
-                walletAddress = accounts[0];
-                walletConnected = true;
-                updateWalletUI();
-                showToast('Wallet reconnected automatically!', 'success');
+           if (accounts.length > 0 && chainId === '0xaa36a7') {
+    window.walletAddress = accounts[0];
+    window.walletConnected = true;
 
-                // 🔹 Fire profile refresh after auto reconnect
-                //refreshUserProfile();
+    updateWalletUI(); // 🔹 ensures button reflects state
+    showToast('Wallet reconnected automatically!', 'success');
 
-                document.dispatchEvent(new Event('walletReady'));
-            } else {
-                localStorage.removeItem('connectedWallet');
+    // Fire profile refresh after reconnect
+    loadUserProfileFromDB(accounts[0]);
+
+    document.dispatchEvent(new Event('walletReady'));
+} else {
+    localStorage.removeItem('connectedWallet');
+}
+
             }
         } catch (err) {
             console.error('Auto reconnect failed:', err);
@@ -366,25 +370,30 @@ window.addEventListener('load', async () => {
 
 // 🔹 Detect account or network changes
 if (typeof window.ethereum !== 'undefined') {
-    window.ethereum.on('accountsChanged', (accounts) => {
-        if (accounts.length === 0) {
-            localStorage.removeItem('connectedWallet');
-            walletConnected = false;
-            walletAddress = null;
-            updateWalletUI();
-            showToast('Wallet disconnected', 'info');
-        } else {
-            walletAddress = accounts[0];
-            localStorage.setItem('connectedWallet', walletAddress);
-            updateWalletUI();
-            showToast('Wallet account changed', 'info');
+window.ethereum.on('accountsChanged', (accounts) => {
+    if (accounts.length === 0) {
+        // Wallet disconnected
+        localStorage.removeItem('connectedWallet');
+        window.walletConnected = false;
+        window.walletAddress = null;
 
-            // 🔹 Fire profile refresh when account changes
-            //refreshUserProfile();
+        updateWalletUI();
+        showToast('Wallet disconnected', 'info');
 
-            document.dispatchEvent(new Event('walletReady'));
-        }
-    });
+        resetUI(); // reset profile info
+    } else {
+        // Wallet switched
+        window.walletAddress = accounts[0];
+        window.walletConnected = true;
+        localStorage.setItem('connectedWallet', window.walletAddress);
+
+        updateWalletUI();
+        showToast('Wallet account changed', 'info');
+
+        loadUserProfileFromDB(accounts[0]);
+        document.dispatchEvent(new Event('walletReady'));
+    }
+});
 
     window.ethereum.on('chainChanged', (chainId) => {
         if (chainId !== '0xaa36a7') {
@@ -2689,6 +2698,7 @@ function renderUserPurchases(purchases) {
         </div>
     `).join('');
 }
+
 
 
 
