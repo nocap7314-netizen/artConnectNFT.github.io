@@ -687,8 +687,8 @@ function showArtworkDetail(artworkId) {
                     <button class="btn btn-secondary" onclick="showArtistProfile('${(artwork.sellerId||'').toLowerCase()}')">
                         <i class="fas fa-user"></i> View Artist
                     </button>
-                    <button class="btn btn-secondary" onclick="showBlockchainDetails('${artwork.id}')">
-                        <i class="fab fa-ethereum"></i> Blockchain
+                    <button class="btn btn-secondary blockchain-btn" data-id="${artwork.id}">
+                      <i class="fab fa-ethereum"></i> History
                     </button>
                     <button class="btn btn-primary enhanced-add-btn" onclick="addToCart(${artwork.id}); closeArtworkModal();" ${!artwork.inStock ? 'disabled' : ''}>
                         <i class="fas fa-shopping-basket"></i> ${artwork.inStock ? 'Add to Basket' : 'Out of Stock'}
@@ -705,6 +705,15 @@ function showArtworkDetail(artworkId) {
 <new_content>
         </div>
     `;
+
+  const blockchainBtn = detailContainer.querySelector(".blockchain-btn");
+  
+  if (blockchainBtn) {
+    blockchainBtn.addEventListener("click", (e) => {
+      const artId = e.currentTarget.dataset.id;
+      showBlockchainDetails(artId);
+    });
+  }
     
     modal.style.display = 'block';
 }
@@ -2668,6 +2677,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
