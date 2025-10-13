@@ -596,22 +596,16 @@
 
     <!-- Loading control functions used by your JS - keep these available globally -->
 
-    <script type="module" src="script.js"></script>
-
-    
-    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+   <div id="loadingOverlay" class="loading-overlay" style="display: none;">
   <div class="loading-spinner"></div>
   <p class="loading-text">Processing your transaction...</p>
 </div>
 
+<!-- ✅ Place your script LAST so all elements (buttons, modals) already exist -->
+<script type="module" src="script.js"></script>
+
 </body>
 </html>
-
-
-
-
-
-
 
 
 
