@@ -687,7 +687,7 @@ function showArtworkDetail(artworkId) {
                     <button class="btn btn-secondary" onclick="showArtistProfile('${(artwork.sellerId||'').toLowerCase()}')">
                         <i class="fas fa-user"></i> View Artist
                     </button>
-                    <button class="btn btn-secondary" onclick="showBlockchainDetails(${artwork.id})">
+                    <button class="btn btn-secondary" onclick="showBlockchainDetails('${artwork.id}')">
                         <i class="fab fa-ethereum"></i> Blockchain
                     </button>
                     <button class="btn btn-primary enhanced-add-btn" onclick="addToCart(${artwork.id}); closeArtworkModal();" ${!artwork.inStock ? 'disabled' : ''}>
@@ -2668,6 +2668,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
