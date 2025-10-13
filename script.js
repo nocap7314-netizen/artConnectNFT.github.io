@@ -2605,7 +2605,7 @@ window.showArtistProfile = showArtistProfile;
 window.closeResellModal = closeResellModal;
 window.closeBlockchainModal = closeBlockchainModal;
 window.closeDetailsModal = closeDetailsModal;
-
+window.closeArtistModal = closeArtistModal;
 
 
 
@@ -2618,6 +2618,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
