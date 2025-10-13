@@ -150,8 +150,18 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="artworkDimensions">Dimensions *</label>
-                            <input type="text" id="artworkDimensions" required placeholder='e.g., 24" x 36" or 1920x1080px'>
+                        <label for="artworkDimensions">Resolution / Dimension *</label>
+                            <select id="artworkDimensions" required>
+                                <option value="">-- Select Resolution --</option>
+                                <option value="1280x720 (HD)">HD (1280×720)</option>
+                                <option value="1920x1080 (Full HD)">Full HD (1920×1080)</option>
+                                <option value="2560x1440 (QHD)">QHD / 2K (2560×1440)</option>
+                                <option value="3840x2160 (4K)">4K UHD (3840×2160)</option>
+                                <option value="7680x4320 (8K)">8K UHD (7680×4320)</option>
+                                <option value="1080x1080 (Square)">Square (1080×1080)</option>
+                                <option value="1080x1350 (Portrait)">Portrait (1080×1350)</option>
+                                <option value="1920x1080 (Landscape)">Landscape (1920×1080)</option>
+                            </select>
                         </div>
 
                         <div class="submission-guidelines">
