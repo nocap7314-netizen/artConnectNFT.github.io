@@ -219,7 +219,7 @@ function updateWalletUI() {
  * Connect wallet
  */
 async function connectWallet() { 
-    if (walletConnected) {
+    if (window.walletConnected) {
         disconnectWallet();
         return;
     }
@@ -231,7 +231,6 @@ async function connectWallet() {
 
     try { 
         const chainId = await window.ethereum.request({ method: 'eth_chainId' }); 
-        
         if (chainId !== '0xaa36a7') {
             showToast('Switching MetaMask to Sepolia...', 'warning');
             try {
@@ -262,21 +261,22 @@ async function connectWallet() {
         }
 
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        
         if (accounts.length > 0) {
-            walletAddress = accounts[0];
-            walletConnected = true;
+            window.walletAddress = accounts[0];
+            window.walletConnected = true;
 
             localStorage.removeItem(USER_DISCONNECTED_KEY);
-            localStorage.setItem('connectedWallet', walletAddress);
+            localStorage.setItem('connectedWallet', window.walletAddress);
 
-            updateWalletUI();
+            // 🔹 Refresh UI for connected state
+            resetUI();           // reset all sections to default before loading user data
+            updateWalletUI();    // update wallet button & warnings
+
             showToast('Wallet connected successfully!', 'success');
 
-            // 🔹 Initialize Firestore live listeners
-            initFirestoreListeners();
+            initFirestoreListeners(); // 🔹 Initialize live listeners
 
-            window.dispatchEvent(new CustomEvent('wallet_ready', { detail: walletAddress }));
+            window.dispatchEvent(new CustomEvent('wallet_ready', { detail: window.walletAddress }));
             document.dispatchEvent(new Event('walletReady'));
         }
     } catch (error) { 
@@ -2653,6 +2653,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
