@@ -585,41 +585,39 @@
     const db = getFirestore(app);
 
     // ✅ Expose globally so script.js (and inline onclick handlers) can access them
-  window.db = db;
-  Object.assign(window, {
-    setDoc,
-    getDoc,
-    doc,
-    addDoc,
-    collection,
-    getDocs,
-    query,
-    orderBy,
-    deleteDoc,
-    updateDoc,
-    arrayUnion
-  });
+    window.db = db;
+    Object.assign(window, {
+        setDoc,
+        getDoc,
+        doc,
+        addDoc,
+        collection,
+        getDocs,
+        query,
+        orderBy,
+        deleteDoc,
+        updateDoc,
+        arrayUnion
+    });
 
-  console.log("🔥 Firebase v10 initialized and Firestore helpers exposed globally");
-</script>
+    console.log("🔥 Firebase v10 initialized and Firestore helpers exposed globally");
+    </script>
 
-<!-- ✅ Your main script (must be loaded last) -->
-<script type="module" src="script.js"></script>
-<!-- Toast notifications -->
-<div id="toastContainer" style="
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-"></div>
+    <!-- ✅ Your main script (must be loaded last) -->
+    <script type="module" src="script.js"></script>
+    <!-- Toast notifications -->
+    <div id="toastContainer" style="
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    "></div>
 
 </body>
 </html>
-
-
 
 
 
