@@ -293,14 +293,14 @@ if (typeof window.ethereum !== 'undefined') {
 }
 
 // 🔹 Wait for wallet to finish loading before using it in other scripts
-function onWalletReady(callback) {
+/*function onWalletReady(callback) {
     if (walletConnected && walletAddress) {
         callback(walletAddress);
     } else {
         document.addEventListener('walletReady', () => callback(walletAddress), { once: true });
     }
 }
-
+*/
 
 
 
@@ -2542,6 +2542,7 @@ window.filterArtworks = filterArtworks;
 window.submitArtwork = submitArtwork;
 window.showArtworkDetail = showArtworkDetail;
 window.closeArtworkModal = closeArtworkModal;
+
 
 
 
