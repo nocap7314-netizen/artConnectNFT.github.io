@@ -935,7 +935,7 @@ async function submitArtwork(event) {
             description: document.getElementById('artworkDescription').value.trim(),
             price: parseFloat(document.getElementById('artworkPrice').value) || 0,
             category: document.getElementById('artworkCategory').value || "Uncategorized",
-            dimensions: document.getElementById('artworkDimensions').value || "Unspecified",
+            dimension: document.getElementById('artworkDimensions').value || "Unspecified",
             year: parseInt(document.getElementById('artworkYear').value) || new Date().getFullYear(),
             imageUrl
         };
@@ -2471,6 +2471,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
