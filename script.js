@@ -219,10 +219,6 @@ async function connectWallet() {
     } 
 }
 const USER_DISCONNECTED_KEY = 'walletDisconnectedByUser';
-// Keep track of active listeners
-let unsubscribeArtworks = null;
-let unsubscribePurchases = null;
-
 function disconnectWallet() {
     walletConnected = false;
     walletAddress = null;
@@ -235,35 +231,14 @@ function disconnectWallet() {
     if (unsubscribeArtworks) unsubscribeArtworks();
     if (unsubscribePurchases) unsubscribePurchases();
 
-    // Clear the UI
-    clearArtworks();
-    clearPurchases();
-    clearUserProfile();
-
+    // Update UI to default disconnected state
     updateWalletUI();
+
     showToast('Wallet disconnected successfully!', 'info');
     console.log('Wallet manually disconnected.');
 
     window.dispatchEvent(new CustomEvent('wallet_disconnected'));
     document.dispatchEvent(new Event('walletDisconnected'));
-}
-
-// Helper functions to clear UI
-function clearArtworks() {
-    document.getElementById('artworkGrid').innerHTML = '';
-}
-
-function clearPurchases() {
-    const purchasesEl = document.getElementById('userPurchases');
-    if (purchasesEl) purchasesEl.innerHTML = '';
-}
-
-
-function clearUserProfile() {
-    const nameEl = document.getElementById('profileName');
-    const bioEl = document.getElementById('profileBio');
-    if (nameEl) nameEl.textContent = '';
-    if (bioEl) bioEl.textContent = '';
 }
 
 
@@ -2622,6 +2597,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
