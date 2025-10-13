@@ -5,6 +5,9 @@ let walletConnected = false;
 let walletAddress = null;
 let submittedArtworks = JSON.parse(localStorage.getItem('user_submitted_artwork') || '[]');
 let isAdmin = false;
+const USER_DISCONNECTED_KEY = 'walletDisconnectedByUser';
+let unsubscribeArtworks = null;
+let unsubscribePurchases = null;
 
 // 🔹 Global wallet recovery after refresh (respects manual logout)
 window.addEventListener("DOMContentLoaded", async () => {
@@ -144,13 +147,7 @@ const blockchainDetails = {
 //}
 
 // 🔹 Global constants & state
-const USER_DISCONNECTED_KEY = 'walletDisconnectedByUser';
-let walletConnected = false;
-let walletAddress = null;
 
-// Keep track of active Firestore listeners
-let unsubscribeArtworks = null;
-let unsubscribePurchases = null;
 
 /**
  * Initialize Firestore live listeners
@@ -2666,6 +2663,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
