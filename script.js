@@ -220,12 +220,26 @@ async function connectWallet() {
     } 
 }
 
+// Keep track of active listeners
+let unsubscribeArtworks = null;
+let unsubscribePurchases = null;
+
 function disconnectWallet() {
     walletConnected = false;
     walletAddress = null;
 
+    // Clear localStorage
     localStorage.removeItem('connectedWallet');
     localStorage.setItem(USER_DISCONNECTED_KEY, 'true');
+
+    // Unsubscribe Firestore listeners
+    if (unsubscribeArtworks) unsubscribeArtworks();
+    if (unsubscribePurchases) unsubscribePurchases();
+
+    // Clear the UI
+    clearArtworks();
+    clearPurchases();
+    clearUserProfile();
 
     updateWalletUI();
     showToast('Wallet disconnected successfully!', 'info');
@@ -234,6 +248,21 @@ function disconnectWallet() {
     window.dispatchEvent(new CustomEvent('wallet_disconnected'));
     document.dispatchEvent(new Event('walletDisconnected'));
 }
+
+// Helper functions to clear UI
+function clearArtworks() {
+    document.getElementById('artworkGrid').innerHTML = '';
+}
+
+function clearPurchases() {
+    document.getElementById('purchasesList').innerHTML = '';
+}
+
+function clearUserProfile() {
+    document.getElementById('userName').textContent = '';
+    document.getElementById('userEmail').textContent = '';
+}
+
 
 // 🔹 Automatically reconnect wallet when page reloads
 window.addEventListener('load', async () => {
@@ -2582,6 +2611,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
