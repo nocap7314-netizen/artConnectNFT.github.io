@@ -120,7 +120,6 @@ const blockchainDetails = {
 // });
 
 
-const USER_DISCONNECTED_KEY = 'walletDisconnectedByUser';
 
 // 🔹 Helper to fetch and update user profile after wallet connect
 //async function refreshUserProfile() {
@@ -219,7 +218,7 @@ async function connectWallet() {
         showToast('Failed to connect wallet', 'error'); 
     } 
 }
-
+const USER_DISCONNECTED_KEY = 'walletDisconnectedByUser';
 // Keep track of active listeners
 let unsubscribeArtworks = null;
 let unsubscribePurchases = null;
@@ -255,13 +254,18 @@ function clearArtworks() {
 }
 
 function clearPurchases() {
-    document.getElementById('purchasesList').innerHTML = '';
+    const purchasesEl = document.getElementById('userPurchases');
+    if (purchasesEl) purchasesEl.innerHTML = '';
 }
 
+
 function clearUserProfile() {
-    document.getElementById('userName').textContent = '';
-    document.getElementById('userEmail').textContent = '';
+    const nameEl = document.getElementById('profileName');
+    const bioEl = document.getElementById('profileBio');
+    if (nameEl) nameEl.textContent = '';
+    if (bioEl) bioEl.textContent = '';
 }
+
 
 
 // 🔹 Automatically reconnect wallet when page reloads
@@ -2618,6 +2622,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
