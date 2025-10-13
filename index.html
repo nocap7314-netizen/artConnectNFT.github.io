@@ -145,7 +145,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="artworkYear">Year Created *</label>
-                                <input type="number" id="artworkYear" min="1800" required>
+                                <input type="number" id="artworkYear" min="1800" max="2024" required>
                             </div>
                         </div>
 
@@ -163,7 +163,6 @@
                                 <option value="1920x1080 (Landscape)">Landscape (1920×1080)</option>
                             </select>
                         </div>
-
 
                         <div class="submission-guidelines">
                             <h3>Submission Guidelines:</h3>
@@ -475,6 +474,10 @@
     </div>
 
 
+
+
+
+
     <!-- Shopping Cart Modal -->
     <div class="cart-modal" id="cartModal">
         <div class="cart-content">
@@ -556,74 +559,78 @@
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Loading Overlay (no CSS included here — styles must live in styles.css) -->
-    <div id="loadingOverlay" class="loading-overlay" style="display:none; align-items:center; justify-content:center; flex-direction:column;">
-        <div class="loading-spinner" aria-hidden="true"></div>
-        <p class="loading-text">Processing your transactions, please wait...</p>
-    </div>
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+  <div class="loading-spinner"></div>
+  <p class="loading-text">Processing your transaction...</p>
+</div>
+    <!-- Firebase Initialization and App Logic -->
+   <!-- ✅ Firebase must come before your main script -->
+<script type="module">
+  import { 
+    initializeApp 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { 
+    getFirestore,
+    setDoc,
+    getDoc,
+    doc,
+    addDoc,
+    collection,
+    getDocs,
+    query,
+    orderBy,
+    deleteDoc,
+    updateDoc,
+    arrayUnion
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-    // Import the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc, updateDoc, arrayUnion} 
-        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  // ✅ Firebase config (yours is correct)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDHJQ1rMxRAEUIc71WOzp4tyK3hswvfSuY",
+    authDomain: "artconnectnft-24db1.firebaseapp.com",
+    projectId: "artconnectnft-24db1",
+    storageBucket: "artconnectnft-24db1.appspot.com",
+    messagingSenderId: "718306679207",
+    appId: "1:718306679207:web:d6f277484bf9e0fb93fe82",
+    measurementId: "G-8M0RCH58VE"
+  };
 
-    // Your Firebase config
-    const firebaseConfig = {
-        apiKey: "AIzaSyDHJQ1rMxRAEUIc71WOzp4tyK3hswvfSuY",
-        authDomain: "artconnectnft-24db1.firebaseapp.com",
-        projectId: "artconnectnft-24db1",
-        storageBucket: "artconnectnft-24db1.firebasestorage.app",
-        messagingSenderId: "718306679207",
-        appId: "1:718306679207:web:d6f277484bf9e0fb93fe82",
-        measurementId: "G-8M0RCH58VE"
-    };
+  // ✅ Initialize Firebase and Firestore
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    // Init
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  // ✅ Expose globally so script.js (and inline onclick handlers) can access them
+  window.db = db;
+  Object.assign(window, {
+    setDoc,
+    getDoc,
+    doc,
+    addDoc,
+    collection,
+    getDocs,
+    query,
+    orderBy,
+    deleteDoc,
+    updateDoc,
+    arrayUnion
+  });
 
-    // ✅ Expose globally so script.js (and inline onclick handlers) can access them
-    window.db = db;
-    Object.assign(window, {
-        setDoc,
-        getDoc,
-        doc,
-        addDoc,
-        collection,
-        getDocs,
-        query,
-        orderBy,
-        deleteDoc,
-        updateDoc,
-        arrayUnion
-    });
+  console.log("🔥 Firebase v10 initialized and Firestore helpers exposed globally");
+</script>
 
-    console.log("🔥 Firebase v10 initialized and Firestore helpers exposed globally");
-    </script>
-
-    <!-- ✅ Your main script (must be loaded last) -->
-    <script type="module" src="script.js"></script>
-    <!-- Toast notifications -->
-    <div id="toastContainer" style="
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    "></div>
+<!-- ✅ Your main script (must be loaded last) -->
+<script type="module" src="script.js"></script>
+<!-- Toast notifications -->
+<div id="toastContainer" style="
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+"></div>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
