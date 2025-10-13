@@ -219,6 +219,10 @@ async function connectWallet() {
     } 
 }
 const USER_DISCONNECTED_KEY = 'walletDisconnectedByUser';
+// Keep track of active Firestore listeners
+let unsubscribeArtworks = null;
+let unsubscribePurchases = null;
+
 function disconnectWallet() {
     walletConnected = false;
     walletAddress = null;
@@ -2597,6 +2601,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
