@@ -230,6 +230,7 @@ function updateWalletUI() {
  * Connect wallet
  */
 async function connectWallet() { 
+    // Toggle wallet connection
     if (window.walletConnected) {
         disconnectWallet();
         return;
@@ -273,6 +274,7 @@ async function connectWallet() {
 
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         if (accounts.length > 0) {
+            // ✅ Always update the global window state
             window.walletAddress = accounts[0];
             window.walletConnected = true;
 
@@ -281,7 +283,14 @@ async function connectWallet() {
 
             showToast('Wallet connected successfully!', 'success');
 
-            initFirestoreListeners(); // 🔹 Initialize live listeners
+            // 🔹 Initialize Firestore listeners
+            initFirestoreListeners();
+
+            // 🔹 Update wallet UI immediately
+            updateWalletUI();
+
+            // 🔹 Update profile info to match wallet
+            loadUserProfileFromDB(accounts[0]);
 
             window.dispatchEvent(new CustomEvent('wallet_ready', { detail: window.walletAddress }));
             document.dispatchEvent(new Event('walletReady'));
@@ -293,12 +302,13 @@ async function connectWallet() {
 }
 
 
+
 /**
  * Disconnect wallet
  */
 function disconnectWallet() {
-    walletConnected = false;
-    walletAddress = null;
+    window.walletConnected = false;
+    window.walletAddress = null;
 
     // Clear localStorage
     localStorage.removeItem('connectedWallet');
@@ -310,7 +320,7 @@ function disconnectWallet() {
     unsubscribeArtworks = null;
     unsubscribePurchases = null;
 
-    // Reset UI to default disconnected state
+    // Reset UI
     resetUI();
     updateWalletUI();
 
@@ -2676,6 +2686,7 @@ function renderUserPurchases(purchases) {
         </div>
     `).join('');
 }
+
 
 
 
