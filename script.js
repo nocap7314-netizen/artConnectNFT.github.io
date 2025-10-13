@@ -2653,6 +2653,20 @@ function waitForFirebase() {
     check();
   });
 }
+function renderUserPurchases(purchases) {
+    const purchasesGrid = document.getElementById('userPurchases');
+    if (!purchasesGrid) return;
+    
+    purchasesGrid.innerHTML = purchases.map(p => `
+        <div class="art-card">
+            <img src="${p.image}" alt="${p.title}">
+            <h3>${p.title}</h3>
+            <p>${p.artist}</p>
+            <p>${p.price} ETH</p>
+        </div>
+    `).join('');
+}
+
 
 
 
