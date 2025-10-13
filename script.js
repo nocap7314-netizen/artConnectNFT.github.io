@@ -143,8 +143,79 @@ const blockchainDetails = {
     //}
 //}
 
+// 🔹 Global constants & state
+const USER_DISCONNECTED_KEY = 'walletDisconnectedByUser';
+let walletConnected = false;
+let walletAddress = null;
+
+// Keep track of active Firestore listeners
+let unsubscribeArtworks = null;
+let unsubscribePurchases = null;
+
+/**
+ * Initialize Firestore live listeners
+ */
+function initFirestoreListeners() {
+    if (!walletConnected) return;
+
+    // Artworks collection
+    const artworksRef = collection(db, "artworks");
+    unsubscribeArtworks = onSnapshot(artworksRef, (snapshot) => {
+        renderArtworks(snapshot); // Your existing render function
+    });
+
+    // Purchases collection (filtered by current wallet)
+    const purchasesRef = collection(db, "purchases");
+    unsubscribePurchases = onSnapshot(purchasesRef, (snapshot) => {
+        renderUserPurchases(snapshot, walletAddress); // Your existing render function
+    });
+
+    console.log("🔥 Firestore listeners initialized.");
+}
+
+/**
+ * Reset the UI to default state
+ */
+function resetUI() {
+    const artworkGrid = document.getElementById("artworkGrid");
+    if (artworkGrid) artworkGrid.innerHTML = "";
+
+    const userArtworks = document.getElementById("userArtworks");
+    if (userArtworks) userArtworks.innerHTML = "";
+
+    const userPurchases = document.getElementById("userPurchases");
+    if (userPurchases) userPurchases.innerHTML = "";
+
+    const profileName = document.getElementById("profileName");
+    if (profileName) profileName.textContent = "Guest User";
+
+    const profileBio = document.getElementById("profileBio");
+    if (profileBio) profileBio.textContent = "No bio yet.";
+
+    const profileWallet = document.getElementById("profileWallet");
+    if (profileWallet) profileWallet.textContent = "Wallet: Not Connected";
+}
+
+/**
+ * Update wallet button/UI
+ */
+function updateWalletUI() {
+    const walletBtn = document.getElementById("walletBtn");
+    if (!walletBtn) return;
+
+    if (walletConnected && walletAddress) {
+        walletBtn.innerHTML = `<i class="fab fa-ethereum"></i> ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}`;
+        walletBtn.classList.add("connected");
+    } else {
+        walletBtn.innerHTML = `<i class="fab fa-ethereum"></i> Connect Ethereum Wallet`;
+        walletBtn.classList.remove("connected");
+    }
+}
+
+/**
+ * Connect wallet
+ */
 async function connectWallet() { 
-    // 🔹 If wallet is already connected, clicking again will log out
     if (walletConnected) {
         disconnectWallet();
         return;
@@ -154,7 +225,7 @@ async function connectWallet() {
         showToast('Please install MetaMask to use this feature', 'error'); 
         return; 
     } 
-    
+
     try { 
         const chainId = await window.ethereum.request({ method: 'eth_chainId' }); 
         
@@ -167,30 +238,22 @@ async function connectWallet() {
                 });
             } catch (switchError) {
                 if (switchError.code === 4902) {
-                    try {
-                        await window.ethereum.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [{
-                                chainId: '0xaa36a7',
-                                chainName: 'Sepolia Test Network',
-                                rpcUrls: ['https://rpc.sepolia.org'],
-                                nativeCurrency: { name: 'Sepolia ETH', symbol: 'ETH', decimals: 18 },
-                                blockExplorerUrls: ['https://sepolia.etherscan.io']
-                            }]
-                        });
-                        await window.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: '0xaa36a7' }]
-                        });
-                    } catch (addErr) {
-                        console.error('Failed to add/switch to Sepolia:', addErr);
-                        showToast('Please switch to Sepolia in MetaMask', 'error');
-                        return;
-                    }
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: '0xaa36a7',
+                            chainName: 'Sepolia Test Network',
+                            rpcUrls: ['https://rpc.sepolia.org'],
+                            nativeCurrency: { name: 'Sepolia ETH', symbol: 'ETH', decimals: 18 },
+                            blockExplorerUrls: ['https://sepolia.etherscan.io']
+                        }]
+                    });
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0xaa36a7' }]
+                    });
                 } else {
-                    console.error('Failed to switch network:', switchError);
-                    showToast('Please switch to Sepolia in MetaMask', 'error');
-                    return;
+                    throw switchError;
                 }
             }
         }
@@ -207,22 +270,21 @@ async function connectWallet() {
             updateWalletUI();
             showToast('Wallet connected successfully!', 'success');
 
-            // 🔹 Fire profile refresh after wallet connects
-            //refreshUserProfile();
+            // 🔹 Initialize Firestore live listeners
+            initFirestoreListeners();
 
             window.dispatchEvent(new CustomEvent('wallet_ready', { detail: walletAddress }));
             document.dispatchEvent(new Event('walletReady'));
         }
     } catch (error) { 
-        console.error(error); 
+        console.error('Wallet connection failed:', error); 
         showToast('Failed to connect wallet', 'error'); 
     } 
 }
-const USER_DISCONNECTED_KEY = 'walletDisconnectedByUser';
-// Keep track of active Firestore listeners
-let unsubscribeArtworks = null;
-let unsubscribePurchases = null;
 
+/**
+ * Disconnect wallet
+ */
 function disconnectWallet() {
     walletConnected = false;
     walletAddress = null;
@@ -234,8 +296,11 @@ function disconnectWallet() {
     // Unsubscribe Firestore listeners
     if (unsubscribeArtworks) unsubscribeArtworks();
     if (unsubscribePurchases) unsubscribePurchases();
+    unsubscribeArtworks = null;
+    unsubscribePurchases = null;
 
-    // Update UI to default disconnected state
+    // Reset UI to default disconnected state
+    resetUI();
     updateWalletUI();
 
     showToast('Wallet disconnected successfully!', 'info');
@@ -2601,6 +2666,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
