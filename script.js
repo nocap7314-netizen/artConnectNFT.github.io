@@ -598,7 +598,7 @@ function renderArtworks(artworks) {
                     <h3 class="artwork-title">${artwork.title}</h3>
                 </div>
                 <p class="artwork-artist">by ${artwork.artist}</p>
-                <p class="artwork-meta">${artwork.category} • ${artwork.year} • ${artwork.dimensions}</p>
+                <p class="artwork-meta">${artwork.category} • ${artwork.year} • ${artwork.dimension}</p>
                 <p class="artwork-description">${artwork.description}</p>
                 <div class="artwork-footer">
                     <span class="artwork-price">${artwork.price} tETH</span>
@@ -732,7 +732,7 @@ function addToCart(artworkId) {
             sellerId: artwork.sellerId,
             category: artwork.category || "Uncategorized",
             description: artwork.description || "",
-            dimension: artwork.dimensions || "",
+            dimension: artwork.dimension || "",
             year: artwork.year || "",
             quantity: 1
         });
@@ -2422,7 +2422,7 @@ async function viewArtworkDetails(artId, source) {
         document.getElementById("detailsDescription").textContent = art.description || "No description available";
         document.getElementById("detailsCategory").textContent = art.category || "Uncategorized";
         document.getElementById("detailsYear").textContent = art.year || "—";
-        document.getElementById("detailsDimensions").textContent = art.dimensions || "—";
+        document.getElementById("detailsDimensions").textContent = art.dimension || "—";
         document.getElementById("detailsPrice").textContent = `${art.price || "0.000"} tETH`;
 
         // Show modal
