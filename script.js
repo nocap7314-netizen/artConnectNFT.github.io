@@ -897,6 +897,11 @@ async function uploadToImgBB(file) {
 }
 
 
+const yearInput = document.getElementById("artworkYear");
+const currentYear = new Date().getFullYear();
+yearInput.max = currentYear;
+
+
 // Submit artwork functionality
 async function submitArtwork(event) {
     event.preventDefault();
@@ -925,18 +930,20 @@ async function submitArtwork(event) {
 
 
         const formData = {
-            title: document.getElementById('artworkTitle').value,
+            title: document.getElementById('artworkTitle').value.trim(),
             artist: currentUser?.username || "Unnamed Artist",
-            description: document.getElementById('artworkDescription').value,
-            price: parseFloat(document.getElementById('artworkPrice').value),
-            category: document.getElementById('artworkCategory').value,
-            dimensions: document.getElementById('artworkDimensions').value,
-            year: parseInt(document.getElementById('artworkYear').value),
+            description: document.getElementById('artworkDescription').value.trim(),
+            price: parseFloat(document.getElementById('artworkPrice').value) || 0,
+            category: document.getElementById('artworkCategory').value || "Uncategorized",
+            dimensions: document.getElementById('artworkDimensions').value || "Unspecified",
+            year: parseInt(document.getElementById('artworkYear').value) || new Date().getFullYear(),
             imageUrl
         };
         
         // Validate form
         if (!validateSubmissionForm(formData)) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
             return;
         }
 
@@ -948,12 +955,13 @@ async function submitArtwork(event) {
             title: formData.title,
             artist:formData.artist,
             category: formData.category,
-            dimension: formData.dimensions,
+            dimension: formData.dimension,
             description: formData.description,
             imageUrl: formData.imageUrl,
             sellerId: walletAddress.toLowerCase(),
             original_owner: walletAddress.toLowerCase(),
-            current_price: parseFloat(formData.price) || 0,
+            price: formData.price,
+            year: formData.year,
             inStock: true,
             submittedAt: new Date().toISOString(),
             owner_history: [
@@ -978,8 +986,8 @@ async function submitArtwork(event) {
         // save to global artworks with same doc id
         await setDoc(doc(db, "artworks", artDocId), newArtwork);
 
-        submittedArtworks.push(newArtwork);
-        localStorage.setItem('user_submitted_artwork', JSON.stringify(submittedArtworks));
+        // submittedArtworks.push(newArtwork);
+        // localStorage.setItem('user_submitted_artwork', JSON.stringify(submittedArtworks));
         
         // Reset form
         document.getElementById('submitForm').reset();
@@ -2336,6 +2344,8 @@ async function resellArtwork(artId, newPrice) {
             imageUrl: artData.artwork.imageUrl,
             year: artData.artwork.year || "",
             price: parsedPrice,
+            resale: true,
+            inStock: true,
             sellerId: walletAddress.toLowerCase(),
             original_owner: artData.original_owner || walletAddress.toLowerCase(),
             current_owner: walletAddress.toLowerCase(),
@@ -2432,45 +2442,6 @@ window.addEventListener("click", (event) => {
 });
 
 
-
-// function disconnectWallet() {
-//   try {
-//     // Mark that user intentionally disconnected (prevents auto-reconnect)
-//     localStorage.setItem('walletDisconnectedByUser', 'true');
-
-//     // Remove saved wallet
-//     localStorage.removeItem('walletAddress');
-
-//     // Remove listeners (if you added them earlier)
-//     if (window.ethereum && window.ethereum.removeListener) {
-//       try {
-//         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-//       } catch (e) { console.warn('accountsChanged removeListener failed', e); }
-//       try {
-//         window.ethereum.removeListener('chainChanged', handleChainChanged);
-//       } catch (e) { console.warn('chainChanged removeListener failed', e); }
-//     }
-
-//     // Reset app state
-//     walletAddress = null;
-//     walletConnected = false;
-
-//     // Update UI (use your existing function — ensure it handles null/false)
-//     updateWalletUI();
-
-//     // Clear profile areas (optional)
-//     const ua = document.getElementById('userArtworks');
-//     const up = document.getElementById('userPurchases');
-//     if (ua) ua.innerHTML = '';
-//     if (up) up.innerHTML = '';
-
-//     showToast('Wallet disconnected locally. To fully revoke access remove this site in MetaMask (instructions below).', 'success');
-//     setTimeout(() => location.reload(), 1000);
-//   } catch (err) {
-//     console.error('disconnectWallet error:', err);
-//     showToast('Failed to disconnect wallet', 'error');
-//   }
-// }
 function showLoading() {
     const overlay = document.getElementById('loadingOverlay');
     if (overlay) overlay.style.display = 'flex';
