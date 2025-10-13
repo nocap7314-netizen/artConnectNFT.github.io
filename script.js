@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Load initial data
-    loadArtworks();
+    loadArtworksLive();
     loadArtists();
     updateCartUI();
     updateWalletUI();
@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Artwork functionality
-async function loadArtworks() {
+/*async function loadArtworks() {
     try {
         // Fetch artworks from Firestore
         const snapshot = await getDocs(collection(db, "artworks"));
@@ -507,7 +507,40 @@ async function loadArtworks() {
         showToast("Failed to load artworks from server", "error");
     }
 
+}*/
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+function loadArtworksLive() {
+    try {
+        const artworksRef = collection(db, "artworks");
+
+        // Live listener for Firestore changes
+        onSnapshot(artworksRef, (snapshot) => {
+            submittedArtworks = [];
+
+            snapshot.forEach(docSnap => {
+                const art = docSnap.data();
+                submittedArtworks.push({
+                    id: art.id || docSnap.id,
+                    ...art
+                });
+            });
+
+            // Save locally for offline cache
+            localStorage.setItem('user_submitted_artwork', JSON.stringify(submittedArtworks));
+            currentArtworks = submittedArtworks;
+
+            // Instantly update UI
+            renderArtworks(currentArtworks);
+        });
+
+        console.log("✅ Real-time Firestore listener active for artworks.");
+    } catch (error) {
+        console.error("❌ Real-time loading failed:", error);
+        showToast("Failed to connect live updates", "error");
+    }
 }
+
 
 function getImageUrl(url) {
     if (!url) return '';
@@ -865,7 +898,7 @@ async function checkout() {
             setTimeout(() => {
                 hideLoading();
                 showToast('Payment successful! Order confirmed.', 'success');
-                loadArtworks();
+                loadArtworksLive();
             }, 800);
         }
     } catch (error) {
@@ -987,7 +1020,7 @@ async function submitArtwork(event) {
         
         showToast('Artwork submitted successfully!', 'success');
         showSection('gallery');
-        loadArtworks();
+        loadArtworksLive();
         //setTimeout(() => location.reload(), 1000);
         
     } catch (error) {
@@ -2358,7 +2391,7 @@ async function resellArtwork(artId, newPrice) {
         // Update UI instantly
         loadUserPurchases(); // refresh purchased list
         loadUserArtworks();   // refresh selling list
-        loadArtworks();
+        loadArtworksLive();
         hideLoading();
 
     } catch (error) {
@@ -2495,6 +2528,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
