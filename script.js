@@ -1013,6 +1013,11 @@ function validateSubmissionForm(formData) {
         showToast('Please fill in all required fields', 'error');
         return false;
     }
+
+    if (formData.dimension === "") {
+        showToast('Please select a resolution/dimension', 'error');
+        return false;
+    }
     
     if (isNaN(formData.price) || formData.price <= 0) {
         showToast('Please enter a valid price', 'error');
@@ -2466,6 +2471,7 @@ function onWalletReady(callback) {
         });
     }
 }
+
 
 
 
