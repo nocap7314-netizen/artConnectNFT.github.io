@@ -153,21 +153,32 @@ const blockchainDetails = {
  * Initialize Firestore live listeners
  */
 function initFirestoreListeners() {
-    if (!walletConnected) return;
+    // 🔹 Unsubscribe previous listeners to avoid duplicates
+    if (unsubscribeArtworks) unsubscribeArtworks();
+    if (unsubscribePurchases) unsubscribePurchases();
 
-    // Artworks collection
+    // 🔹 Live listener for all artworks
     const artworksRef = collection(db, "artworks");
     unsubscribeArtworks = onSnapshot(artworksRef, (snapshot) => {
-        renderArtworks(snapshot); // Your existing render function
-    });
+        const artworks = snapshot.docs.map(docSnap => ({
+            id: docSnap.id,
+            ...docSnap.data()
+        }));
+        renderArtworks(artworks); // safe render
+        console.log(`✅ Real-time listener active for artworks: ${artworks.length} items`);
+    }, (err) => console.error("Firestore artworks listener error:", err));
 
-    // Purchases collection (filtered by current wallet)
-    const purchasesRef = collection(db, "purchases");
-    unsubscribePurchases = onSnapshot(purchasesRef, (snapshot) => {
-        renderUserPurchases(snapshot, walletAddress); // Your existing render function
-    });
-
-    console.log("🔥 Firestore listeners initialized.");
+    // 🔹 Live listener for user purchases
+    if (walletConnected && walletAddress) {
+        const purchasesRef = collection(db, "purchases");
+        unsubscribePurchases = onSnapshot(purchasesRef, (snapshot) => {
+            const purchases = snapshot.docs
+                .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+                .filter(p => p.buyer === walletAddress); // only user's purchases
+            renderUserPurchases(purchases);
+            console.log(`✅ Real-time listener active for user purchases: ${purchases.length} items`);
+        }, (err) => console.error("Firestore purchases listener error:", err));
+    }
 }
 
 /**
@@ -2656,16 +2667,19 @@ function waitForFirebase() {
 function renderUserPurchases(purchases) {
     const purchasesGrid = document.getElementById('userPurchases');
     if (!purchasesGrid) return;
+
+    if (!Array.isArray(purchases)) purchases = [];
     
     purchasesGrid.innerHTML = purchases.map(p => `
         <div class="art-card">
-            <img src="${p.image}" alt="${p.title}">
-            <h3>${p.title}</h3>
-            <p>${p.artist}</p>
-            <p>${p.price} ETH</p>
+            <img src="${p.image || ''}" alt="${p.title || 'Untitled'}">
+            <h3>${p.title || 'Untitled'}</h3>
+            <p>${p.artist || 'Unknown'}</p>
+            <p>${p.price ? p.price + ' ETH' : ''}</p>
         </div>
     `).join('');
 }
+
 
 
 
