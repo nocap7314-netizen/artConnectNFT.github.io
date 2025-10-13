@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', function() {
 /*async function loadArtworks() {
     try {
         // Fetch artworks from Firestore
-        const snapshot = await getDocs(collection(db, "artworks"));
+        const snapshot = await getDocs(collection(window.db, "artworks"));
 
         submittedArtworks = []; // reset before reloading
         snapshot.forEach(docSnap => {
@@ -512,7 +512,7 @@ import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.
 
 function loadArtworksLive() {
     try {
-        const artworksRef = collection(db, "artworks");
+        const artworksRef = collection(window.db, "artworks");
 
         // Live listener for Firestore changes
         onSnapshot(artworksRef, (snapshot) => {
@@ -2542,6 +2542,7 @@ window.filterArtworks = filterArtworks;
 window.submitArtwork = submitArtwork;
 window.showArtworkDetail = showArtworkDetail;
 window.closeArtworkModal = closeArtworkModal;
+
 
 
 
