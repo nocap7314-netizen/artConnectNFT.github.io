@@ -1245,91 +1245,168 @@ document.addEventListener('DOMContentLoaded', function() {
 // }
 
 // 1) NEW loadArtists() - group by sellerId (wallet) and pull username & bio from users/{wallet}
+// async function loadArtists() {
+//   const artistsGrid = document.getElementById('artistsGrid');
+//   if (!artistsGrid) return;
+
+//   // If no artworks, short-circuit
+//   if (!submittedArtworks || submittedArtworks.length === 0) {
+//     artistsGrid.innerHTML = `<p>No artists found</p>`;
+//     return;
+//   }
+
+//   // Build a set of unique seller wallet addresses
+//   const sellerSet = new Set();
+//   submittedArtworks.forEach(a => {
+//     if (a.sellerId) sellerSet.add(a.sellerId.toLowerCase());
+//   });
+//   const sellers = Array.from(sellerSet).map(w => w.toLowerCase());
+
+//   try {
+//     // Fetch all user docs in parallel for those wallets
+//     const userDocPromises = sellers.map(w => getDoc(doc(db, 'users', w)));
+//     const userDocs = await Promise.all(userDocPromises);
+
+//     const artists = sellers.map((walletAddr, idx) => {
+//       const userSnap = userDocs[idx];
+//       const userData = (userSnap && userSnap.exists()) ? userSnap.data() : {};
+//       const username = userData.username ||
+//         (submittedArtworks.find(a => a.sellerId?.toLowerCase() === walletAddr)?.artist) ||
+//         'Unnamed Artist';
+//       const bio = userData.bio || 'This artist has not added a bio yet.';
+//       const artworks = submittedArtworks.filter(a => a.sellerId?.toLowerCase() === walletAddr);
+//       const totalSales = artworks.reduce((s, art) => s + (parseFloat(art.price) || 0), 0);
+//       const joinedDate = userData.joinedAt ? new Date(userData.joinedAt).getFullYear() : '—';
+
+//       return {
+//         walletAddr,
+//         username,
+//         bio,
+//         artworks,
+//         totalSales,
+//         joinedDate
+//       };
+//     });
+
+//     // Sort by artwork count (most active first)
+//     artists.sort((a, b) => b.artworks.length - a.artworks.length);
+
+//     // Render
+//     // <div class="artist-card" onclick="showArtistProfile('${artist.walletAddr}')">
+//     //     <div class="artist-header">
+//     //       <h3>${artist.username}</h3>
+//     //       <small class="wallet-display">${artist.walletAddr.slice(0,6)}...${artist.walletAddr.slice(-4)}</small>
+//     //     </div>
+//     //     <p>${artist.bio}</p>
+//     //     <div class="artist-meta">
+//     //       <small>${artist.artworks.length} Artworks</small>
+//     //       <small>${artist.totalSales.toFixed(2)} tETH Sales</small>
+//     //       <small>${artist.joinedDate} Joined</small>
+//     //     </div>
+//     //   </div>
+// artistsGrid.innerHTML = artists.map(artist => `
+//   <div class="artist-card" onclick="showArtistProfile('${artist.walletAddr}')">
+//     <div class="artist-header">
+//         <div class="artist-avatar">${artist.username.charAt(0).toUpperCase()}</div>
+//         <div class="artist-info">
+//           <h3>${artist.username}</h3>
+//           <p>${artist.bio ? artist.bio.slice(0, 40) + "..." : "No bio yet."}</p>
+//         </div>
+//     </div>
+
+//     <div class="artist-stats">
+//         <span><i class="fa-solid fa-image"></i> ${artist.artworks?.length || 0} Artworks</span>
+//         <span><i class="fa-brands fa-ethereum"></i> ${(artist.totalSales || 0).toFixed(3)} tETH</span>
+//     </div>
+
+//     <div class="artist-stats">
+//         <span><i class="fa-regular fa-calendar"></i> ${artist.joinedDate || "-"}</span>
+//     </div>
+//   </div>
+// `).join('');
+
+//   } catch (err) {
+//     console.error('Error loading artists:', err);
+//     artistsGrid.innerHTML = `<p style="color:red;">Failed to load artists.</p>`;
+//   }
+// }
+
+
 async function loadArtists() {
   const artistsGrid = document.getElementById('artistsGrid');
   if (!artistsGrid) return;
 
-  // If no artworks, short-circuit
   if (!submittedArtworks || submittedArtworks.length === 0) {
     artistsGrid.innerHTML = `<p>No artists found</p>`;
     return;
   }
 
-  // Build a set of unique seller wallet addresses
+  // Build unique seller IDs
   const sellerSet = new Set();
   submittedArtworks.forEach(a => {
     if (a.sellerId) sellerSet.add(a.sellerId.toLowerCase());
   });
-  const sellers = Array.from(sellerSet).map(w => w.toLowerCase());
+  const sellers = Array.from(sellerSet);
 
   try {
-    // Fetch all user docs in parallel for those wallets
-    const userDocPromises = sellers.map(w => getDoc(doc(db, 'users', w)));
-    const userDocs = await Promise.all(userDocPromises);
+    const artists = [];
 
-    const artists = sellers.map((walletAddr, idx) => {
-      const userSnap = userDocs[idx];
-      const userData = (userSnap && userSnap.exists()) ? userSnap.data() : {};
+    for (const walletAddr of sellers) {
+      // 1️⃣ Load user data
+      const userSnap = await getDoc(doc(db, "users", walletAddr));
+      const userData = userSnap.exists() ? userSnap.data() : {};
+
+      // 2️⃣ Load sold artworks
+      const soldSnap = await getDocs(collection(db, "users", walletAddr, "artSold"));
+      const soldArtworks = soldSnap.docs.map(d => d.data());
+      const totalSales = soldArtworks.reduce((sum, art) => sum + (parseFloat(art.artwork?.price) || 0), 0);
+
+      // 3️⃣ Load artist profile info
       const username = userData.username ||
-        (submittedArtworks.find(a => a.sellerId?.toLowerCase() === walletAddr)?.artist) ||
-        'Unnamed Artist';
-      const bio = userData.bio || 'This artist has not added a bio yet.';
+        submittedArtworks.find(a => a.sellerId?.toLowerCase() === walletAddr)?.artist ||
+        "Unnamed Artist";
+      const bio = userData.bio || "This artist has not added a bio yet.";
       const artworks = submittedArtworks.filter(a => a.sellerId?.toLowerCase() === walletAddr);
-      const totalSales = artworks.reduce((s, art) => s + (parseFloat(art.price) || 0), 0);
-      const joinedDate = userData.joinedAt ? new Date(userData.joinedAt).getFullYear() : '—';
+      const joinedDate = userData.joinedAt ? new Date(userData.joinedAt).getFullYear() : "—";
 
-      return {
+      artists.push({
         walletAddr,
         username,
         bio,
         artworks,
         totalSales,
-        joinedDate
-      };
-    });
+        joinedDate,
+      });
+    }
 
-    // Sort by artwork count (most active first)
     artists.sort((a, b) => b.artworks.length - a.artworks.length);
 
-    // Render
-    // <div class="artist-card" onclick="showArtistProfile('${artist.walletAddr}')">
-    //     <div class="artist-header">
-    //       <h3>${artist.username}</h3>
-    //       <small class="wallet-display">${artist.walletAddr.slice(0,6)}...${artist.walletAddr.slice(-4)}</small>
-    //     </div>
-    //     <p>${artist.bio}</p>
-    //     <div class="artist-meta">
-    //       <small>${artist.artworks.length} Artworks</small>
-    //       <small>${artist.totalSales.toFixed(2)} tETH Sales</small>
-    //       <small>${artist.joinedDate} Joined</small>
-    //     </div>
-    //   </div>
-artistsGrid.innerHTML = artists.map(artist => `
-  <div class="artist-card" onclick="showArtistProfile('${artist.walletAddr}')">
-    <div class="artist-header">
-        <div class="artist-avatar">${artist.username.charAt(0).toUpperCase()}</div>
-        <div class="artist-info">
-          <h3>${artist.username}</h3>
-          <p>${artist.bio ? artist.bio.slice(0, 40) + "..." : "No bio yet."}</p>
+    // 4️⃣ Render the UI
+    artistsGrid.innerHTML = artists.map(artist => `
+      <div class="artist-card" onclick="showArtistProfile('${artist.walletAddr}')">
+        <div class="artist-header">
+          <div class="artist-avatar">${artist.username.charAt(0).toUpperCase()}</div>
+          <div class="artist-info">
+            <h3>${artist.username}</h3>
+            <p>${artist.bio ? artist.bio.slice(0, 40) + "..." : "No bio yet."}</p>
+          </div>
         </div>
-    </div>
-
-    <div class="artist-stats">
-        <span><i class="fa-solid fa-image"></i> ${artist.artworks?.length || 0} Artworks</span>
-        <span><i class="fa-brands fa-ethereum"></i> ${(artist.totalSales || 0).toFixed(3)} tETH</span>
-    </div>
-
-    <div class="artist-stats">
-        <span><i class="fa-regular fa-calendar"></i> ${artist.joinedDate || "-"}</span>
-    </div>
-  </div>
-`).join('');
+        <div class="artist-stats">
+          <span><i class="fa-solid fa-image"></i> ${artist.artworks.length} Artworks</span>
+          <span><i class="fa-brands fa-ethereum"></i> ${artist.totalSales.toFixed(3)} tETH</span>
+        </div>
+        <div class="artist-stats">
+          <span><i class="fa-regular fa-calendar"></i> ${artist.joinedDate}</span>
+        </div>
+      </div>
+    `).join('');
 
   } catch (err) {
     console.error('Error loading artists:', err);
     artistsGrid.innerHTML = `<p style="color:red;">Failed to load artists.</p>`;
   }
 }
+
 
 
 // async function showArtistProfile(walletAddr) {
@@ -2677,7 +2754,6 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
-
 
 
 
