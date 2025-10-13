@@ -2602,7 +2602,11 @@ window.submitArtwork = submitArtwork;
 window.showArtworkDetail = showArtworkDetail;
 window.closeArtworkModal = closeArtworkModal;
 window.showArtistProfile = showArtistProfile;
-window.closeArtistModal = closeArtistModal;
+window.closeResellModal = closeResellModal;
+window.closeBlockchainModal = closeBlockchainModal;
+window.closeDetailsModal = closeDetailsModal;
+
+
 
 
 function waitForFirebase() {
@@ -2614,6 +2618,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
