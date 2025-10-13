@@ -1771,7 +1771,7 @@ async function loadUserProfileFromDB(walletAddr) {
 
 
 
-function enableUsernameEdit() {
+/*function enableUsernameEdit() {
   const now = Date.now();
   const lastEdit = currentUser?.lastUsernameUpdate || 0;
   const sixtyDays = 60 * 24 * 60 * 60 * 1000;
@@ -1784,7 +1784,7 @@ function enableUsernameEdit() {
 
   // Cooldown expired → show input
   document.getElementById("usernameEdit").style.display = "block";
-}
+}*/
 
 
 // function renderUserProfile() {
@@ -2542,6 +2542,7 @@ window.filterArtworks = filterArtworks;
 window.submitArtwork = submitArtwork;
 window.showArtworkDetail = showArtworkDetail;
 window.closeArtworkModal = closeArtworkModal;
+
 
 
 
