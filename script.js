@@ -2602,6 +2602,7 @@ window.submitArtwork = submitArtwork;
 window.showArtworkDetail = showArtworkDetail;
 window.closeArtworkModal = closeArtworkModal;
 window.showArtistProfile = showArtistProfile;
+window.closeArtistModal = closeArtistModal;
 
 
 function waitForFirebase() {
@@ -2613,6 +2614,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
