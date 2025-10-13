@@ -2601,6 +2601,8 @@ window.filterArtworks = filterArtworks;
 window.submitArtwork = submitArtwork;
 window.showArtworkDetail = showArtworkDetail;
 window.closeArtworkModal = closeArtworkModal;
+window.showArtistProfile = showArtistProfile;
+
 
 function waitForFirebase() {
   return new Promise(resolve => {
@@ -2611,6 +2613,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
