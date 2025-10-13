@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 }*/
-import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 async function loadArtworksLive() {
   try {
@@ -2556,6 +2556,7 @@ function waitForFirebase() {
     check();
   });
 }
+
 
 
 
