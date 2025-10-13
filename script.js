@@ -510,35 +510,39 @@ document.addEventListener('DOMContentLoaded', function() {
 }*/
 import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-function loadArtworksLive() {
-    try {
-        const artworksRef = collection(window.db, "artworks");
+async function loadArtworksLive() {
+  try {
+    // 🔹 Wait for Firebase initialization before using Firestore
+    const db = await waitForFirebase();
+    console.log("🔥 Firestore ready, initializing live listener...");
 
-        // Live listener for Firestore changes
-        onSnapshot(artworksRef, (snapshot) => {
-            submittedArtworks = [];
+    const artworksRef = collection(db, "artworks");
 
-            snapshot.forEach(docSnap => {
-                const art = docSnap.data();
-                submittedArtworks.push({
-                    id: art.id || docSnap.id,
-                    ...art
-                });
-            });
+    // Live listener for Firestore changes
+    onSnapshot(artworksRef, (snapshot) => {
+      const submittedArtworks = [];
 
-            // Save locally for offline cache
-            localStorage.setItem('user_submitted_artwork', JSON.stringify(submittedArtworks));
-            currentArtworks = submittedArtworks;
-
-            // Instantly update UI
-            renderArtworks(currentArtworks);
+      snapshot.forEach(docSnap => {
+        const art = docSnap.data();
+        submittedArtworks.push({
+          id: art.id || docSnap.id,
+          ...art
         });
+      });
 
-        console.log("✅ Real-time Firestore listener active for artworks.");
-    } catch (error) {
-        console.error("❌ Real-time loading failed:", error);
-        showToast("Failed to connect live updates", "error");
-    }
+      // Save locally for offline cache
+      localStorage.setItem('user_submitted_artwork', JSON.stringify(submittedArtworks));
+
+      // Update global variable and re-render immediately
+      currentArtworks = submittedArtworks;
+      renderArtworks(currentArtworks);
+
+      console.log(`✅ Real-time Firestore listener active. Loaded ${submittedArtworks.length} artworks.`);
+    });
+  } catch (error) {
+    console.error("❌ Real-time loading failed:", error);
+    showToast("Failed to connect live updates", "error");
+  }
 }
 
 
@@ -2542,6 +2546,18 @@ window.filterArtworks = filterArtworks;
 window.submitArtwork = submitArtwork;
 window.showArtworkDetail = showArtworkDetail;
 window.closeArtworkModal = closeArtworkModal;
+
+function waitForFirebase() {
+  return new Promise(resolve => {
+    const check = () => {
+      if (window.db) resolve(window.db);
+      else setTimeout(check, 100);
+    };
+    check();
+  });
+}
+
+
 
 
 
