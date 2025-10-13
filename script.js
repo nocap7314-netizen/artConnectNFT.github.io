@@ -279,10 +279,6 @@ async function connectWallet() {
             localStorage.removeItem(USER_DISCONNECTED_KEY);
             localStorage.setItem('connectedWallet', window.walletAddress);
 
-            // 🔹 Refresh UI for connected state
-            resetUI();           // reset all sections to default before loading user data
-            updateWalletUI();    // update wallet button & warnings
-
             showToast('Wallet connected successfully!', 'success');
 
             initFirestoreListeners(); // 🔹 Initialize live listeners
@@ -295,6 +291,7 @@ async function connectWallet() {
         showToast('Failed to connect wallet', 'error'); 
     } 
 }
+
 
 /**
  * Disconnect wallet
@@ -2679,6 +2676,7 @@ function renderUserPurchases(purchases) {
         </div>
     `).join('');
 }
+
 
 
 
