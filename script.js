@@ -940,6 +940,7 @@ async function checkout() {
             setTimeout(() => {
                 hideLoading();
                 showToast('Payment successful! Order confirmed.', 'success');
+                loadArtists();
                 loadArtworksLive();
             }, 800);
         }
@@ -2754,6 +2755,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
