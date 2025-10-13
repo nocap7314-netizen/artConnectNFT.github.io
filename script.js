@@ -198,16 +198,22 @@ function resetUI() {
  */
 function updateWalletUI() {
     const walletBtn = document.getElementById("walletBtn");
+    const walletWarning = document.getElementById("walletWarning");
     if (!walletBtn) return;
 
     if (walletConnected && walletAddress) {
         walletBtn.innerHTML = `<i class="fab fa-ethereum"></i> ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}`;
         walletBtn.classList.add("connected");
+        walletBtn.title = `Connected to Ethereum: ${walletAddress}`;
+        if (walletWarning) walletWarning.style.display = 'none';
     } else {
         walletBtn.innerHTML = `<i class="fab fa-ethereum"></i> Connect Ethereum Wallet`;
         walletBtn.classList.remove("connected");
+        walletBtn.title = 'Connect your Ethereum wallet via MetaMask';
+        if (walletWarning) walletWarning.style.display = 'block';
     }
 }
+
 
 /**
  * Connect wallet
@@ -428,22 +434,6 @@ async function saveUserToFirestore(walletAddress) {
 }
 
 
-function updateWalletUI() {
-    const walletBtn = document.getElementById('walletBtn');
-    const walletWarning = document.getElementById('walletWarning');
-    
-    if (walletConnected) {
-        walletBtn.innerHTML = `<i class="fas fa-wallet"></i> ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
-        walletBtn.classList.add('connected');
-        walletBtn.title = `Connected to Ethereum: ${walletAddress}`;
-        if (walletWarning) walletWarning.style.display = 'none';
-    } else {
-        walletBtn.innerHTML = '<i class="fas fa-wallet"></i> Connect Wallet';
-        walletBtn.classList.remove('connected');
-        walletBtn.title = 'Connect your Ethereum wallet via MetaMask'
-        if (walletWarning) walletWarning.style.display = 'block';
-    }
-}
 
 async function sendPayment(toAddress, amount) {
     if (!walletConnected || !walletAddress) {
