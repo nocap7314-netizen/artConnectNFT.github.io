@@ -1548,92 +1548,92 @@ function closeArtistModal() {
 }
 
 // Blockchain Details Functions
-// function showBlockchainDetails(artworkId) {
-//     const artwork = [...submittedArtworks].find(item => item.id === artworkId); // , ...artworkData].find(item => item.id === artworkId);
-//     const blockchain = blockchainDetails[artworkId] || generateMockBlockchainData(artworkId);
+function showBlockchainDetails(artworkId) {
+    const artwork = [...submittedArtworks].find(item => item.id === artworkId); // , ...artworkData].find(item => item.id === artworkId);
+    const blockchain = blockchainDetails[artworkId] || generateMockBlockchainData(artworkId);
     
-//     const modal = document.getElementById('blockchainModal');
-//     const detailContainer = document.getElementById('blockchainDetail');
+    const modal = document.getElementById('blockchainModal');
+    const detailContainer = document.getElementById('blockchainDetail');
     
-//     detailContainer.innerHTML = `
-//         <div class="blockchain-header">
-//             <h2><i class="fab fa-ethereum"></i> Blockchain Details</h2>
-//             <h3>${artwork.title}</h3>
-//         </div>
+    detailContainer.innerHTML = `
+        <div class="blockchain-header">
+            <h2><i class="fab fa-ethereum"></i> Blockchain Details</h2>
+            <h3>${artwork.title}</h3>
+        </div>
         
-//         <div class="blockchain-info">
-//             <div class="blockchain-section">
-//                 <h4>Token Information</h4>
-//                 <div class="info-grid">
-//                     <div class="info-item">
-//                         <label>Token ID:</label>
-//                         <span class="copyable" onclick="copyToClipboard('${blockchain.tokenId}')">${blockchain.tokenId}</span>
-//                     </div>
-//                     <div class="info-item">
-//                         <label>Contract Address:</label>
-//                         <span class="copyable" onclick="copyToClipboard('${blockchain.contractAddress}')">${blockchain.contractAddress}</span>
-//                     </div>
-//                     <div class="info-item">
-//                         <label>Chain:</label>
-//                         <span><i class="fab fa-ethereum"></i> ${blockchain.chain}</span>
-//                     </div>
-//                     <div class="info-item">
-//                         <label>Status:</label>
-//                         <span class="status-badge ${blockchain.status}">${blockchain.status.toUpperCase()}</span>
-//                     </div>
-//                 </div>
-//             </div>
+        <div class="blockchain-info">
+            <div class="blockchain-section">
+                <h4>Token Information</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Token ID:</label>
+                        <span class="copyable" onclick="copyToClipboard('${blockchain.tokenId}')">${blockchain.tokenId}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Contract Address:</label>
+                        <span class="copyable" onclick="copyToClipboard('${blockchain.contractAddress}')">${blockchain.contractAddress}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Chain:</label>
+                        <span><i class="fab fa-ethereum"></i> ${blockchain.chain}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Status:</label>
+                        <span class="status-badge ${blockchain.status}">${blockchain.status.toUpperCase()}</span>
+                    </div>
+                </div>
+            </div>
             
-//             <div class="blockchain-section">
-//                 <h4>Price History</h4>
-//                 <div class="price-chart">
-//                     ${blockchain.priceHistory.map(entry => `
-//                         <div class="price-entry">
-//                             <span class="price-date">${entry.date}</span>
-//                             <span class="price-amount">${entry.price} ETH</span>
-//                             <span class="price-event">${entry.event}</span>
-//                         </div>
-//                     `).join('')}
-//                 </div>
-//             </div>
+            <div class="blockchain-section">
+                <h4>Price History</h4>
+                <div class="price-chart">
+                    ${blockchain.priceHistory.map(entry => `
+                        <div class="price-entry">
+                            <span class="price-date">${entry.date}</span>
+                            <span class="price-amount">${entry.price} ETH</span>
+                            <span class="price-event">${entry.event}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
             
-//             <div class="blockchain-section">
-//                 <h4>Ownership History</h4>
-//                 <div class="ownership-history">
-//                     ${blockchain.ownershipHistory.map(entry => `
-//                         <div class="ownership-entry">
-//                             <span class="owner-address copyable" onclick="copyToClipboard('${entry.owner}')">${entry.owner}</span>
-//                             <span class="ownership-date">${entry.date}</span>
-//                             <span class="ownership-event">${entry.event}</span>
-//                         </div>
-//                     `).join('')}
-//                 </div>
-//             </div>
-//         </div>
-//     `;
+            <div class="blockchain-section">
+                <h4>Ownership History</h4>
+                <div class="ownership-history">
+                    ${blockchain.ownershipHistory.map(entry => `
+                        <div class="ownership-entry">
+                            <span class="owner-address copyable" onclick="copyToClipboard('${entry.owner}')">${entry.owner}</span>
+                            <span class="ownership-date">${entry.date}</span>
+                            <span class="ownership-event">${entry.event}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
     
-//     modal.style.display = 'block';
-// }
+    modal.style.display = 'block';
+}
 
-// function closeBlockchainModal() {
-//     document.getElementById('blockchainModal').style.display = 'none';
-// }
+function closeBlockchainModal() {
+    document.getElementById('blockchainModal').style.display = 'none';
+}
 
-// function generateMockBlockchainData(artworkId) {
-//     return {
-//         tokenId: `0x${artworkId.toString(16).padStart(16, '0')}`,
-//         contractAddress: "0x495f947276749Ce646f68AC8c248420045cb7b5e",
-//         chain: "Ethereum",
-//         status: Math.random() > 0.5 ? "new" : "resold",
-//         priceHistory: [
-//             { date: "2024-01-15", price: (Math.random() * 2 + 0.5).toFixed(3), event: "Minted" },
-//             { date: "2024-02-20", price: (Math.random() * 2 + 0.8).toFixed(3), event: "Price Update" }
-//         ],
-//         ownershipHistory: [
-//             { owner: `0x${Math.random().toString(16).substr(2, 8)}...${Math.random().toString(16).substr(2, 4)}`, date: "2024-01-15", event: "Minted" }
-//         ]
-//     };
-// }
+function generateMockBlockchainData(artworkId) {
+    return {
+        tokenId: `0x${artworkId.toString(16).padStart(16, '0')}`,
+        contractAddress: "0x495f947276749Ce646f68AC8c248420045cb7b5e",
+        chain: "Ethereum",
+        status: Math.random() > 0.5 ? "new" : "resold",
+        priceHistory: [
+            { date: "2024-01-15", price: (Math.random() * 2 + 0.5).toFixed(3), event: "Minted" },
+            { date: "2024-02-20", price: (Math.random() * 2 + 0.8).toFixed(3), event: "Price Update" }
+        ],
+        ownershipHistory: [
+            { owner: `0x${Math.random().toString(16).substr(2, 8)}...${Math.random().toString(16).substr(2, 4)}`, date: "2024-01-15", event: "Minted" }
+        ]
+    };
+}
 
 function getArtworkStatus(artworkId) {
     const blockchain = blockchainDetails[artworkId];
@@ -2504,75 +2504,6 @@ function renderUserPurchases(purchases) {
 }
 
 
-function showBlockchainDetails(artworkId) {
-  const artwork = [...submittedArtworks].find(item => String(item.id) === String(artworkId));
-  if (!artwork) {
-    showToast("Artwork not found", "error");
-    return;
-  }
-
-  const modal = document.getElementById("blockchainModal");
-  const container = document.getElementById("blockchainDetail");
-
-  let ownerHistoryHTML = "";
-  if (artwork.owner_history && artwork.owner_history.length > 0) {
-    ownerHistoryHTML = artwork.owner_history.map(
-      h => `
-        <div class="history-row">
-          <span class="history-date">${h.date}</span>
-          <span class="history-event">${h.event}</span>
-          <span class="history-owner">${h.owner}</span>
-        </div>
-      `
-    ).join("");
-  } else {
-    ownerHistoryHTML = `<p>No ownership history available.</p>`;
-  }
-
-  let priceHistoryHTML = "";
-  if (artwork.price_history && artwork.price_history.length > 0) {
-    priceHistoryHTML = artwork.price_history.map(
-      p => `
-        <div class="history-row">
-          <span class="history-date">${p.date}</span>
-          <span class="history-event">${p.event}</span>
-          <span class="history-price">${p.price} tETH</span>
-        </div>
-      `
-    ).join("");
-  } else {
-    priceHistoryHTML = `<p>No price history available.</p>`;
-  }
-
-  container.innerHTML = `
-    <img src="${artwork.imageUrl}" alt="${artwork.title}" class="blockchain-img">
-    <div class="blockchain-info">
-      <h2>${artwork.title}</h2>
-      <p><strong>Artist:</strong> ${artwork.artist}</p>
-      <p><strong>Category:</strong> ${artwork.category}</p>
-      <p><strong>Year:</strong> ${artwork.year}</p>
-      <p><strong>Dimension:</strong> ${artwork.dimension}</p>
-      <p><strong>Description:</strong> ${artwork.description}</p>
-      <hr>
-      <h3>Owner History</h3>
-      <div class="history-table">${ownerHistoryHTML}</div>
-      <hr>
-      <h3>Price History</h3>
-      <div class="history-table">${priceHistoryHTML}</div>
-    </div>
-  `;
-
-  modal.style.display = "block";
-}
-
-function closeBlockchainModal() {
-  document.getElementById("blockchainModal").style.display = "none";
-}
-
-
-
-
-
 
 // script.js
 window.connectWallet = connectWallet;
@@ -2651,34 +2582,3 @@ document.addEventListener("DOMContentLoaded", () => {
     buyArtworkFromModal,
   });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
