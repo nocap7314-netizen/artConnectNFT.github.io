@@ -185,8 +185,6 @@ function initFirestoreListeners() {
  * Reset the UI to default state
  */
 function resetUI() {
-    const artworkGrid = document.getElementById("artworkGrid");
-    if (artworkGrid) artworkGrid.innerHTML = "";
 
     const userArtworks = document.getElementById("userArtworks");
     if (userArtworks) userArtworks.innerHTML = "";
@@ -212,18 +210,19 @@ function updateWalletUI() {
     const walletWarning = document.getElementById("walletWarning");
     if (!walletBtn) return;
 
-    if (walletConnected && walletAddress) {
-        walletBtn.innerHTML = `<i class="fab fa-ethereum"></i> ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}`;
-        walletBtn.classList.add("connected");
-        walletBtn.title = `Connected to Ethereum: ${walletAddress}`;
+    if (window.walletConnected && window.walletAddress) {
+        walletBtn.innerHTML = `<i class="fab fa-ethereum"></i> ${window.walletAddress.slice(0,6)}...${window.walletAddress.slice(-4)}`;
+        walletBtn.classList.add("connected");  // green connected style
+        walletBtn.title = `Connected to Ethereum: ${window.walletAddress}`;
         if (walletWarning) walletWarning.style.display = 'none';
     } else {
         walletBtn.innerHTML = `<i class="fab fa-ethereum"></i> Connect Ethereum Wallet`;
-        walletBtn.classList.remove("connected");
+        walletBtn.classList.remove("connected");  // remove green
         walletBtn.title = 'Connect your Ethereum wallet via MetaMask';
         if (walletWarning) walletWarning.style.display = 'block';
     }
 }
+
 
 
 /**
@@ -307,6 +306,7 @@ async function connectWallet() {
  * Disconnect wallet
  */
 function disconnectWallet() {
+    // ✅ Clear wallet state
     window.walletConnected = false;
     window.walletAddress = null;
 
@@ -320,8 +320,10 @@ function disconnectWallet() {
     unsubscribeArtworks = null;
     unsubscribePurchases = null;
 
-    // Reset UI
+    // 🔹 Reset UI first
     resetUI();
+
+    // 🔹 Update wallet button/UI after clearing state
     updateWalletUI();
 
     showToast('Wallet disconnected successfully!', 'info');
@@ -330,6 +332,7 @@ function disconnectWallet() {
     window.dispatchEvent(new CustomEvent('wallet_disconnected'));
     document.dispatchEvent(new Event('walletDisconnected'));
 }
+
 
 
 
@@ -2686,6 +2689,7 @@ function renderUserPurchases(purchases) {
         </div>
     `).join('');
 }
+
 
 
 
