@@ -595,11 +595,28 @@ function renderArtworks(artworks) {
         return;
     }
 
-    artworkGrid.innerHTML = artworks.map(artwork => `
+    artworkGrid.innerHTML = artworks.map(artwork => {
+        // ✅ Determine status label based on Firestore field
+        let statusLabel = "BRAND NEW";
+        let statusClass = "brand-new";
+
+        if (artwork.status?.toLowerCase() === "resold") {
+            statusLabel = "RESOLD";
+            statusClass = "resold";
+        } else if (artwork.status?.toLowerCase() === "sold") {
+            statusLabel = "SOLD";
+            statusClass = "sold";
+        }
+
+        // ✅ Disable Add to Cart if artwork belongs to current user
+        const isOwner = artwork.sellerId?.toLowerCase() === walletAddress?.toLowerCase();
+        const isOutOfStock = !artwork.inStock;
+
+        return `
         <div class="artwork-card">
             <div class="artwork-image">
                 <img src="${getImageUrl(artwork.imageUrl)}" alt="${artwork.title}" loading="lazy">
-                ${!artwork.inStock ? '<div class="stock-badge">Out of Stock</div>' : ''}
+                ${isOutOfStock ? '<div class="stock-badge">Out of Stock</div>' : ''}
             </div>
             <div class="artwork-info">
                 <div class="artwork-header">
@@ -615,17 +632,22 @@ function renderArtworks(artworks) {
                     <button class="btn btn-secondary" onclick="showArtworkDetail('${artwork.id}')">
                         <i class="fas fa-eye"></i> View Details
                     </button>
-                    <button class="btn btn-primary add-to-basket-btn" onclick="addToCart('${artwork.id}')" ${!artwork.inStock ? 'disabled' : ''}>
-                        <i class="fas fa-shopping-basket"></i> ${artwork.inStock ? 'Add to Cart' : 'Out of Stock'}
+                    <button class="btn btn-primary add-to-basket-btn" 
+                        onclick="addToCart('${artwork.id}')"
+                        ${isOutOfStock || isOwner ? 'disabled' : ''}>
+                        <i class="fas fa-shopping-basket"></i> 
+                        ${isOutOfStock ? 'Out of Stock' : isOwner ? 'Your Artwork' : 'Add to Cart'}
                     </button>
                 </div>
                 <div class="artwork-status">
-                    <span class="status-badge ${getArtworkStatus(artwork.id)}">${getArtworkStatusText(artwork.id)}</span>
+                    <span class="status-badge ${statusClass}">${statusLabel}</span>
                 </div>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
+
 
 function filterArtworks() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -2756,6 +2778,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
