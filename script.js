@@ -534,8 +534,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
 async function loadArtworksLive() {
   try {
     // 🔹 Wait for Firebase initialization before using Firestore
@@ -2769,6 +2767,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
