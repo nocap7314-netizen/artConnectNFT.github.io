@@ -950,49 +950,57 @@ async function securePurchase(item) {
 }
 
 async function checkout() {
-    if (!walletConnected || !walletAddress) {
-        return onWalletReady(async (address) => {
-            console.log("Wallet was not ready — now connected:", address);
-            await checkout();
-        });
+  if (!walletConnected || !walletAddress) {
+    return onWalletReady(async (address) => {
+      console.log("Wallet was not ready — now connected:", address);
+      await checkout();
+    });
+  }
+
+  if (cart.length === 0) {
+    showToast('Your cart is empty', 'error');
+    return;
+  }
+
+  showLoading();
+  showLoadingText("Preparing your transactions...");
+  showToast('Processing payment...', 'warning');
+
+  try {
+    let successfulPurchases = 0;
+
+    for (let item of cart) {
+      try {
+        await securePurchase(item);
+        successfulPurchases++;
+      } catch (err) {
+        console.warn(`Skipping purchase for ${item.title}:`, err.message);
+      }
     }
 
-    if (cart.length === 0) {
-        showToast('Your cart is empty', 'error');
-        return;
-    }
+    if (successfulPurchases > 0) {
+      clearCart();
+      toggleCart();
+      showLoadingText("Finalizing your order...");
 
-    showLoading();
-    showLoadingText("Preparing your transactions...");
-    showToast('Processing payment...', 'warning');
-
-    try {
-        for (let item of cart) {
-            if (!item.sellerId || item.sellerId === "unknown") {
-                console.warn(`Missing sellerId for artwork: ${item.title}`);
-                continue;
-            }
-
-            await securePurchase(item); // 🧩 calls the new safe function
-        }
-
-        clearCart();
-        toggleCart();
-        showLoadingText("Finalizing your order...");
-
-        setTimeout(() => {
-            hideLoading();
-            showToast('Payment successful! Order confirmed.', 'success');
-            loadArtists();
-            loadArtworksLive();
-        }, 800);
-
-    } catch (error) {
-        console.error('Checkout failed:', error);
+      setTimeout(() => {
         hideLoading();
-        showToast(`Payment failed: ${error.message}`, 'error');
+        showToast('Payment successful! Order confirmed.', 'success');
+        loadArtists();
+        loadArtworksLive();
+      }, 800);
+    } else {
+      hideLoading();
+      showToast('No valid purchases were made.', 'info');
     }
+
+  } catch (error) {
+    console.error('Checkout failed:', error);
+    hideLoading();
+    showToast(`Payment failed: ${error.message}`, 'error');
+  }
 }
+
 
 
 
@@ -2778,6 +2786,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
