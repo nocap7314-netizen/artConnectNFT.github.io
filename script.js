@@ -2075,6 +2075,11 @@ async function saveUsername() {
 
 
 function enableBioEdit() {
+  if (!walletConnected || !currentUser) {
+        showToast("Wallet not connected", "error");
+        return;
+    }
+  
   const now = Date.now();
   const lastEdit = currentUser?.lastBioEdit || 0;
   const sixtyDays = 60 * 24 * 60 * 60 * 1000;
@@ -2755,6 +2760,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
