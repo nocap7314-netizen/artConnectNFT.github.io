@@ -8,6 +8,16 @@ let isAdmin = false;
 const USER_DISCONNECTED_KEY = 'walletDisconnectedByUser';
 let unsubscribeArtworks = null;
 let unsubscribePurchases = null;
+import { 
+  collection, 
+  onSnapshot, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  deleteDoc, 
+  runTransaction 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 
 // 🔹 Global wallet recovery after refresh (respects manual logout)
 window.addEventListener("DOMContentLoaded", async () => {
@@ -849,6 +859,62 @@ window.addEventListener('click', function(event) {
         }
     });
 });
+
+// 🔒 Secure Firestore Transaction to prevent double purchase
+async function securePurchase(item) {
+  const artRef = doc(db, "artworks", String(item.id));
+
+  try {
+    await runTransaction(db, async (transaction) => {
+      const artSnap = await transaction.get(artRef);
+
+      if (!artSnap.exists()) {
+        throw new Error(`"${item.title}" has already been sold or removed.`);
+      }
+
+      const artData = artSnap.data();
+      if (artData.inStock === false) {
+        throw new Error(`"${item.title}" was just purchased by another user.`);
+      }
+
+      // Reserve artwork (set as out of stock immediately)
+      transaction.update(artRef, { inStock: false });
+
+      // Wait for payment confirmation
+      showLoadingText(`Waiting for MetaMask confirmation to pay seller for "${item.title}"...`);
+      const txSeller = await sendPayment(item.sellerId, item.price);
+
+      const today = new Date().toISOString().split("T")[0];
+
+      // Record buyer’s purchase in Firestore (inside transaction)
+      const buyerRef = doc(db, "users", walletAddress.toLowerCase(), "artBought", String(item.id));
+      transaction.set(buyerRef, {
+        artwork: {
+          id: item.id,
+          title: item.title,
+          artist: item.artist || "Unknown",
+          imageUrl: item.imageUrl,
+          price: item.price,
+        },
+        buyerId: walletAddress.toLowerCase(),
+        sellerId: item.sellerId.toLowerCase(),
+        timestamp: new Date().toISOString(),
+        transaction_hash: txSeller,
+      });
+
+      // Optionally remove from seller’s sellingArts
+      const sellerRef = doc(db, "users", item.sellerId.toLowerCase(), "sellingArts", String(item.id));
+      transaction.delete(sellerRef);
+    });
+
+    showToast(`✅ Successfully purchased "${item.title}"!`, "success");
+  } catch (e) {
+    console.error("❌ Secure purchase failed:", e);
+    showToast(e.message, "error");
+    throw e;
+  }
+}
+
 async function checkout() {
     if (!walletConnected || !walletAddress) {
         return onWalletReady(async (address) => {
@@ -873,77 +939,20 @@ async function checkout() {
                 continue;
             }
 
-            const totalPrice = item.price * (item.quantity || 1);
-            const sellerAmount = totalPrice; // 100% to artist
-            const today = new Date().toISOString().split("T")[0];
-
-            // 🔹 Pay Seller
-            showLoadingText(`Waiting for MetaMask confirmation to pay seller for "${item.title}"...`);
-            const txSeller = await sendPayment(item.sellerId, sellerAmount);
-            console.log("Transaction sent to seller:", txSeller);
-
-            // Common record for both buyer & seller
-            const recordData = {
-                artwork: {
-                id: item.id,
-                title: item.title,
-                artist: item.artist || "Unknown Artist",
-                price: item.price,
-                category: item.category || "Uncategorized",
-                description: item.description || "",
-                dimension: item.dimension || "N/A",
-                imageUrl: item.imageUrl,
-                year: item.year || "",
-                },
-                buyerId: walletAddress.toLowerCase(),
-                sellerId: item.sellerId.toLowerCase(),
-                timestamp: new Date().toISOString(),
-            };
-
-            // For Seller: Simple sale record (no blockchain info)
-            const sellerRef = doc(db, "users", item.sellerId.toLowerCase(), "artSold", String(item.id));
-            await setDoc(sellerRef, recordData);
-
-            // For Buyer: Enhanced version with blockchain history
-            const artSnap = await getDoc(doc(db, "artworks", String(item.id)));
-            let artData = artSnap.exists() ? artSnap.data() : item;
-
-            const owner_history = Array.isArray(artData.owner_history)
-                ? [...artData.owner_history, { owner: walletAddress.toLowerCase(), date: today, event: "Sold" }]
-                : [
-                    { owner: item.sellerId.toLowerCase(), date: today, event: "Listed" },
-                    { owner: walletAddress.toLowerCase(), date: today, event: "Sold" },
-                ];
-
-            const price_history = Array.isArray(artData.price_history)
-                ? artData.price_history // ✅ keep existing history, no new event
-                : [{ price: parseFloat(item.price), date: today, event: "Listed" }];
-
-            const buyerRef = doc(db, "users", walletAddress.toLowerCase(), "artBought", String(item.id));
-            await setDoc(buyerRef, {
-                ...recordData,
-                current_owner: walletAddress.toLowerCase(),
-                original_owner: artData.original_owner || item.sellerId.toLowerCase(),
-                owner_history,
-                price_history,
-                transaction_hash: txSeller || "",
-            });
-
-            // Delete sold art from seller + global
-            await deleteDoc(doc(db, "artworks", String(item.id)));
-            await deleteDoc(doc(db, "users", item.sellerId.toLowerCase(), "sellingArts", String(item.id)));
-
-            clearCart();
-            toggleCart();
-            showLoadingText("Finalizing your order...");
-
-            setTimeout(() => {
-                hideLoading();
-                showToast('Payment successful! Order confirmed.', 'success');
-                loadArtists();
-                loadArtworksLive();
-            }, 800);
+            await securePurchase(item); // 🧩 calls the new safe function
         }
+
+        clearCart();
+        toggleCart();
+        showLoadingText("Finalizing your order...");
+
+        setTimeout(() => {
+            hideLoading();
+            showToast('Payment successful! Order confirmed.', 'success');
+            loadArtists();
+            loadArtworksLive();
+        }, 800);
+
     } catch (error) {
         console.error('Checkout failed:', error);
         hideLoading();
@@ -2760,6 +2769,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
