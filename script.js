@@ -1010,7 +1010,6 @@ async function submitArtwork(event) {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
     
-
     try {
         const fileInput = document.getElementById('artworkImage');
         const file = fileInput.files[0];
@@ -1021,7 +1020,6 @@ async function submitArtwork(event) {
         }
 
         const imageUrl = await uploadToImgBB(file);
-
 
         const formData = {
             title: document.getElementById('artworkTitle').value.trim(),
@@ -1047,7 +1045,7 @@ async function submitArtwork(event) {
         const newArtwork = {
             id: artDocId,
             title: formData.title,
-            artist:formData.artist,
+            artist: formData.artist,
             category: formData.category,
             dimension: formData.dimension,
             description: formData.description,
@@ -1058,18 +1056,22 @@ async function submitArtwork(event) {
             year: formData.year,
             inStock: true,
             submittedAt: new Date().toISOString(),
+
+            // ✅ ADD THIS FIELD:
+            status: "new",
+
             owner_history: [
                 {
-                owner: walletAddress.toLowerCase(),
-                date: today,
-                event: "Submitted"
+                    owner: walletAddress.toLowerCase(),
+                    date: today,
+                    event: "Submitted"
                 }
             ],
             price_history: [
                 {
-                price: parseFloat(formData.price) || 0,
-                date: today,
-                event: "Listed"
+                    price: parseFloat(formData.price) || 0,
+                    date: today,
+                    event: "Listed"
                 }
             ]
         };
@@ -1101,35 +1103,6 @@ async function submitArtwork(event) {
     }
 }
 
-function validateSubmissionForm(formData) {
-    if (!formData.title || !formData.artist || !formData.description || 
-        !formData.imageUrl || !formData.category || !formData.dimension) {
-        showToast('Please fill in all required fields', 'error');
-        return false;
-    }
-    
-    if (formData.dimension === "") {
-        showToast('Please select a resolution/dimension', 'error');
-        return false;
-    }
-
-    if (isNaN(formData.price) || formData.price <= 0) {
-        showToast('Please enter a valid price', 'error');
-        return false;
-    }
-    
-    if (isNaN(formData.year) || formData.year < 1800 || formData.year > new Date().getFullYear()) {
-        showToast('Please enter a valid year', 'error');
-        return false;
-    }
-
-    if (!formData.imageUrl.startsWith("http")) {
-        showToast('Invalid image link. Upload may have failed.', 'error');
-        return false;
-    }
-    
-    return true;
-}
 
 // Contact form functionality
 function sendMessage(event) {
@@ -2459,14 +2432,12 @@ async function resellArtwork(artId, newPrice) {
         };
 
         const updatedPriceHistory = Array.isArray(artData.price_history)
-        ? [...artData.price_history, newPriceEvent]
-        : [newPriceEvent];
+            ? [...artData.price_history, newPriceEvent]
+            : [newPriceEvent];
 
-        // Preserve existing owner history
         const ownerHistory = Array.isArray(artData.owner_history)
             ? [...artData.owner_history]
             : [];
-
 
         // Build new resale record
         const relistedArt = {
@@ -2484,9 +2455,12 @@ async function resellArtwork(artId, newPrice) {
             sellerId: walletAddress.toLowerCase(),
             original_owner: artData.original_owner || walletAddress.toLowerCase(),
             current_owner: walletAddress.toLowerCase(),
-            owner_history: artData.owner_history || [],
+            owner_history: ownerHistory,
             price_history: updatedPriceHistory,
             timestamp: new Date().toISOString(),
+
+            // ✅ ADD THIS LINE
+            status: "resold"
         };
 
         // Save to user's sellingArts
@@ -2500,9 +2474,9 @@ async function resellArtwork(artId, newPrice) {
 
         showToast("Artwork listed for resale!", "success");
 
-        // Update UI instantly
-        loadUserPurchasesLive(); // refresh purchased list
-        loadUserArtworksLive();   // refresh selling list
+        // Refresh UI
+        loadUserPurchasesLive();
+        loadUserArtworksLive();
         loadArtworksLive();
         hideLoading();
 
@@ -2511,6 +2485,7 @@ async function resellArtwork(artId, newPrice) {
         showToast("Resell failed: " + error.message, "error");
     }
 }
+
 
 async function viewArtworkDetails(artId, source) {
     try {
@@ -2778,6 +2753,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
