@@ -863,6 +863,7 @@ async function securePurchase(item) {
   const artRef = doc(db, "artworks", String(item.id));
 
   try {
+    // Step 1: Transaction to atomically mark as sold
     await runTransaction(db, async (transaction) => {
       const artSnap = await transaction.get(artRef);
 
@@ -875,35 +876,45 @@ async function securePurchase(item) {
         throw new Error(`"${item.title}" was just purchased by another user.`);
       }
 
-      // Reserve artwork (set as out of stock immediately)
+      // Mark as sold (prevents other buyers)
       transaction.update(artRef, { inStock: false });
 
-      // Wait for payment confirmation
+      // Payment process
       showLoadingText(`Waiting for MetaMask confirmation to pay seller for "${item.title}"...`);
       const txSeller = await sendPayment(item.sellerId, item.price);
 
       const today = new Date().toISOString().split("T")[0];
 
+      // Record buyer’s purchase
       // Record buyer’s purchase in Firestore (inside transaction)
-      const buyerRef = doc(db, "users", walletAddress.toLowerCase(), "artBought", String(item.id));
-      transaction.set(buyerRef, {
-        artwork: {
-          id: item.id,
-          title: item.title,
-          artist: item.artist || "Unknown",
-          imageUrl: item.imageUrl,
-          price: item.price,
-        },
-        buyerId: walletAddress.toLowerCase(),
-        sellerId: item.sellerId.toLowerCase(),
-        timestamp: new Date().toISOString(),
-        transaction_hash: txSeller,
-      });
+const buyerRef = doc(db, "users", walletAddress.toLowerCase(), "artBought", String(item.id));
+transaction.set(buyerRef, {
+  artwork: {
+    id: item.id,
+    title: item.title,
+    artist: item.artist || "Unknown Artist",
+    price: item.price,
+    category: item.category || "Uncategorized",
+    description: item.description || "No description available",
+    dimension: item.dimension || "N/A",
+    imageUrl: item.imageUrl,
+    year: item.year || "",
+  },
+  buyerId: walletAddress.toLowerCase(),
+  sellerId: item.sellerId.toLowerCase(),
+  timestamp: new Date().toISOString(),
+  transaction_hash: txSeller,
+});
 
-      // Optionally remove from seller’s sellingArts
+
+      // Remove from seller’s selling list
       const sellerRef = doc(db, "users", item.sellerId.toLowerCase(), "sellingArts", String(item.id));
       transaction.delete(sellerRef);
     });
+
+    // Step 2: Delete the artwork *after* successful transaction
+    await deleteDoc(artRef);
+    console.log(`🗑️ Deleted artwork "${item.title}" after successful sale.`);
 
     showToast(`✅ Successfully purchased "${item.title}"!`, "success");
   } catch (e) {
@@ -2767,6 +2778,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBlockchainModal,
   });
 });
+
 
 
 
